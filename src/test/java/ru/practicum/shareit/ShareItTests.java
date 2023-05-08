@@ -24,7 +24,7 @@ class ShareItTests {
     private Item item;
 
     @BeforeEach
-    void InitEach() {
+    void initEach() {
         userDao = new UserDaoImpl();
         itemDao = new ItemDaoImpl(userDao);
 
