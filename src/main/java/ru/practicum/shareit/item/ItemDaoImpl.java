@@ -40,9 +40,9 @@ public class ItemDaoImpl implements ItemDao {
 
     public Item update(Item item, Long ownerId, Long itemId) {
         for (Item it : items) {
-            if (it.getId() == itemId) {
+            if (it.getId().equals(itemId)) {
 
-                if (it.getOwner() != ownerId) {
+                if (!it.getOwner().equals(ownerId)) {
                     throw new NotFoundException("Error! Item has ownerId=" + it.getOwner() + " but X-Sharer-User-Id ownerId=" + ownerId);
                 }
 
@@ -68,7 +68,7 @@ public class ItemDaoImpl implements ItemDao {
 
     public Item get(Long id) {
         for (Item it : items) {
-            if (it.getId() == id) {
+            if (it.getId().equals(id)) {
                 log.info("End of Item getting: " + it.toString());
                 return it;
             }
@@ -81,7 +81,7 @@ public class ItemDaoImpl implements ItemDao {
         List<Item> itemList = new ArrayList<>();
 
         for (Item it : items) {
-            if (it.getOwner() == ownerId) {
+            if (it.getOwner().equals(ownerId)) {
                 itemList.add(it);
             }
         }

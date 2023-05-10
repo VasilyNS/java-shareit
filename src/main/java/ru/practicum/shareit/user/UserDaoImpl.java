@@ -28,7 +28,7 @@ public class UserDaoImpl implements UserDao {
 
     public User update(Long id, User user) {
         for (User u : users) {
-            if (u.getId() == id) {
+            if (u.getId().equals(id)) {
                 if (user.getName() != null) {
                     u.setName(user.getName());
                 }
@@ -48,7 +48,7 @@ public class UserDaoImpl implements UserDao {
 
     public User get(Long id) {
         for (User u : users) {
-            if (u.getId() == id) {
+            if (u.getId().equals(id)) {
                 log.info("End of User getting: " + u.toString());
                 return u;
             }
@@ -65,7 +65,7 @@ public class UserDaoImpl implements UserDao {
         if (get(id) != null) {
             User delItm = null;
             for (User u : users) {
-                if (u.getId() == id) {
+                if (u.getId().equals(id)) {
                     delItm = u;
                 }
             }
@@ -83,7 +83,7 @@ public class UserDaoImpl implements UserDao {
     private void userDubValidation(User user) {
         Validator.userEmailValidation(user);
         for (User u : users) {
-            if (u.getEmail().equals(user.getEmail()) && (u.getId() != user.getId())) {
+            if (u.getEmail().equals(user.getEmail()) && (!u.getId().equals(user.getId()))) {
                 throw new ValidationException("Duplicate email! user_id=" +
                         u.getId() + ", email= " + user.getEmail());
             }
