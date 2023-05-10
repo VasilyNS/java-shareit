@@ -16,20 +16,20 @@ public class UserService {
         return userDao.create(user);
     }
 
-    public User update(int id, UserDto userDto) {
+    public User update(Long id, UserDto userDto) {
         User user = UserMapper.toUser(userDto);
         return userDao.update(id, user);
     }
 
-    public User get(int id) {
+    public User get(Long id) {
         return userDao.get(id);
     }
 
-    public List<User> findAll() {
-        return userDao.findAll();
+    public List<User> getAll() {
+        return userDao.getAll();
     }
 
-    public void del(int id) {
+    public void del(Long id) {
         userDao.del(id);
     }
 

@@ -13,7 +13,7 @@ public class ItemDto {
     private String name;
     private String description;
     private Boolean available;
-    //private int request;  // для БД
+    //private Long request;  // для БД
     private ItemRequest request;
 
 }

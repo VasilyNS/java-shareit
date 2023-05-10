@@ -11,26 +11,26 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemDao itemDao;
 
-    public Item create(ItemDto itemDto, int ownerId) {
+    public Item create(ItemDto itemDto, Long ownerId) {
         Item item = ItemMapper.toItem(itemDto);
         return itemDao.create(item, ownerId);
     }
 
-    public Item update(ItemDto itemDto, int ownerId, int itemId) {
+    public Item update(ItemDto itemDto, Long ownerId, Long itemId) {
         Item item = ItemMapper.toItem(itemDto);
         return itemDao.update(item, ownerId, itemId);
     }
 
-    public Item get(int id) {
+    public Item get(Long id) {
         return itemDao.get(id);
     }
 
-    public List<Item> findAllByOwner(int ownerId) {
-        return itemDao.findAllByOwner(ownerId);
+    public List<Item> getAllByOwner(Long ownerId) {
+        return itemDao.getAllByOwner(ownerId);
     }
 
-    public List<Item> findByText(String text) {
-        return itemDao.findByText(text);
+    public List<Item> getByText(String text) {
+        return itemDao.getByText(text);
     }
 
 }

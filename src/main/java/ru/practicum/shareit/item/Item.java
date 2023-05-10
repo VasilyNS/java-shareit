@@ -10,12 +10,12 @@ import ru.practicum.shareit.request.ItemRequest;
 @NoArgsConstructor
 public class Item {
 
-    private int id;
+    private Long id;
     private String name;
     private String description;
     private Boolean available;
-    private int owner;
-    //private int request;  // для БД
+    private Long owner;
+    //private Long request;  // для БД
     private ItemRequest request;
 
 }

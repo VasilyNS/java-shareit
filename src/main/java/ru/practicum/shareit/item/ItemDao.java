@@ -4,14 +4,14 @@ import java.util.List;
 
 public interface ItemDao {
 
-    Item create(Item item, int ownerId);
+    Item create(Item item, Long ownerId);
 
-    Item update(Item item, int ownerId, int itemId);
+    Item update(Item item, Long ownerId, Long itemId);
 
-    Item get(int id);
+    Item get(Long id);
 
-    List<Item> findAllByOwner(int ownerId);
+    List<Item> getAllByOwner(Long ownerId);
 
-    List<Item> findByText(String text);
+    List<Item> getByText(String text);
 
 }

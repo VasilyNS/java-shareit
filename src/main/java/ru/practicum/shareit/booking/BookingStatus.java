@@ -8,7 +8,7 @@ package ru.practicum.shareit.booking;
  * REJECTED=3 — бронирование отклонено владельцем,<br>
  * CANCELED=4 — бронирование отменено создателем.<br>
  */
-public enum Bs {
+public enum BookingStatus {
     WAITING(1),
     APPROVED(2),
     REJECTED(3),
@@ -16,7 +16,7 @@ public enum Bs {
 
     private int code;
 
-    Bs(int code) {
+    BookingStatus(int code) {
         this.code = code;
     }
 

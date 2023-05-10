@@ -24,38 +24,38 @@ public class ItemController {
     @PostMapping
     public Item create(@RequestBody ItemDto itemDto, @RequestHeader Map<String, String> headers) {
         log.info("Begin of Item creation: " + itemDto.toString());
-        int ownerId = getOwnerId(headers);
+        Long ownerId = getOwnerId(headers);
         return itemService.create(itemDto, ownerId);
     }
 
     @PatchMapping("/{id}")
-    public Item update(@PathVariable int id, @RequestBody ItemDto itemDto,  @RequestHeader Map<String, String> headers) {
+    public Item update(@PathVariable Long id, @RequestBody ItemDto itemDto, @RequestHeader Map<String, String> headers) {
         log.info("Begin of Item updating, id=" + id + ", " + itemDto.toString());
-        int ownerId = getOwnerId(headers);
+        Long ownerId = getOwnerId(headers);
         return itemService.update(itemDto, ownerId, id);
     }
 
     @GetMapping("/{id}")
-    public Item get(@PathVariable int id) {
+    public Item get(@PathVariable Long id) {
         log.info("Begin of Item getting, id=" + id);
         return itemService.get(id);
     }
 
     @GetMapping
-    public List<Item> findAllByOwner(@RequestHeader Map<String, String> headers) {
+    public List<Item> getAllByOwner(@RequestHeader Map<String, String> headers) {
         log.info("Begin of Item findAllByOwner");
-        int ownerId = getOwnerId(headers);
-        return itemService.findAllByOwner(ownerId);
+        Long ownerId = getOwnerId(headers);
+        return itemService.getAllByOwner(ownerId);
     }
 
     @GetMapping("/search")
-    public List<Item> findByText(@RequestParam String text) {
+    public List<Item> getByText(@RequestParam String text) {
         log.info("Begin of Item findByText, text=" + text);
-        return itemService.findByText(text);
+        return itemService.getByText(text);
     }
 
-    private int getOwnerId(Map<String, String> headers) {
-        return Integer.parseInt(headers.get(Const.X_OWNER));
+    private Long getOwnerId(Map<String, String> headers) {
+        return Long.parseLong(headers.get(Const.X_OWNER));
     }
 
 }

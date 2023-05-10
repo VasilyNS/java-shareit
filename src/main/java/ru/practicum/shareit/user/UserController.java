@@ -21,26 +21,25 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    public User update(@PathVariable int id, @RequestBody UserDto userDto) {
+    public User update(@PathVariable Long id, @RequestBody UserDto userDto) {
         log.info("Begin of User updating, id=" + id + ", " + userDto.toString());
         return userService.update(id, userDto);
     }
 
     @GetMapping("/{id}")
-    public User get(@PathVariable int id) {
+    public User get(@PathVariable Long id) {
         log.info("Begin of User getting, id=" + id);
         return userService.get(id);
     }
 
     @GetMapping
-    public List<User> findAll() {
-        log.info("Begin of User findAll");
-        return userService.findAll();
+    public List<User> getAll() {
+        log.info("Begin of User getAll");
+        return userService.getAll();
     }
 
-
     @DeleteMapping("/{id}")
-    public void del(@PathVariable int id) {
+    public void del(@PathVariable Long id) {
         log.info("Begin of User deleting, id=" + id);
         userService.del(id);
     }

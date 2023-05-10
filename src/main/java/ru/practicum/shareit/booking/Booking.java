@@ -7,11 +7,11 @@ import java.time.LocalDateTime;
 @Data
 public class Booking {
 
-    private int id;
+    private Long id;
     private LocalDateTime start;
     private LocalDateTime end;
-    private int item;
-    private int booker;
-    private Bs status;
+    private Long item;
+    private Long booker;
+    private BookingStatus status;
 
 }

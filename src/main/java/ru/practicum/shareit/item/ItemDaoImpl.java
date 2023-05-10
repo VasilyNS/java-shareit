@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.tools.Validator;
-import ru.practicum.shareit.tools.exception.ObjectNotFoundException;
+import ru.practicum.shareit.tools.exception.*;
 import ru.practicum.shareit.user.UserDao;
 
 import java.util.ArrayList;
@@ -16,10 +16,10 @@ import java.util.List;
 public class ItemDaoImpl implements ItemDao {
 
     private List<Item> items = new ArrayList<>();
-    private int count = 1;
+    private Long count = 1L;
     private final UserDao userDao;
 
-    public Item create(Item item, int ownerId) {
+    public Item create(Item item, Long ownerId) {
         Validator.allItemValidation(item);
         Item newItem = new Item();
 
@@ -38,12 +38,12 @@ public class ItemDaoImpl implements ItemDao {
         return newItem;
     }
 
-    public Item update(Item item, int ownerId, int itemId) {
+    public Item update(Item item, Long ownerId, Long itemId) {
         for (Item it : items) {
             if (it.getId() == itemId) {
 
                 if (it.getOwner() != ownerId) {
-                    throw new ObjectNotFoundException("Error! Item has ownerId=" + it.getOwner() + " but X-Sharer-User-Id ownerId=" + ownerId);
+                    throw new NotFoundException("Error! Item has ownerId=" + it.getOwner() + " but X-Sharer-User-Id ownerId=" + ownerId);
                 }
 
                 // Обновляем поля, если они есть в JSON
@@ -66,7 +66,7 @@ public class ItemDaoImpl implements ItemDao {
         return item;
     }
 
-    public Item get(int id) {
+    public Item get(Long id) {
         for (Item it : items) {
             if (it.getId() == id) {
                 log.info("End of Item getting: " + it.toString());
@@ -74,10 +74,10 @@ public class ItemDaoImpl implements ItemDao {
             }
         }
 
-        throw new ObjectNotFoundException("No Item with id=" + id);
+        throw new ItemNotFoundException(id);
     }
 
-    public List<Item> findAllByOwner(int ownerId) {
+    public List<Item> getAllByOwner(Long ownerId) {
         List<Item> itemList = new ArrayList<>();
 
         for (Item it : items) {
@@ -90,7 +90,7 @@ public class ItemDaoImpl implements ItemDao {
         return itemList;
     }
 
-    public List<Item> findByText(String text) {
+    public List<Item> getByText(String text) {
         List<Item> itemList = new ArrayList<>();
 
         for (Item it : items) {

@@ -15,45 +15,35 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR) // 500
     public ErrorResponse handleValidationException(final ValidationException e) {
         log.warn(e.getMessage());
-        return new ErrorResponse(
-                e.getMessage()
-        );
+        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR) // 500
     public ErrorResponse handleThrowable(final Throwable e) {
         log.warn("An unexpected error occurred");
-        return new ErrorResponse(
-                "An unexpected error occurred"
-        );
+        return new ErrorResponse("An unexpected error occurred");
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND) // 404
-    public ErrorResponse handleObjectNotFoundException(final ObjectNotFoundException e) {
+    public ErrorResponse handleNotFoundException(final NotFoundException e) {
         log.warn(e.getMessage());
-        return new ErrorResponse(
-                e.getMessage()
-        );
+        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
     public ErrorResponse handleUserEmailFailException(final UserEmailFailException e) {
         log.warn(e.getMessage());
-        return new ErrorResponse(
-                e.getMessage()
-        );
+        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
     public ErrorResponse handleItemValidateFailException(final ItemValidateFailException e) {
         log.warn(e.getMessage());
-        return new ErrorResponse(
-                e.getMessage()
-        );
+        return new ErrorResponse(e.getMessage());
     }
 
 }

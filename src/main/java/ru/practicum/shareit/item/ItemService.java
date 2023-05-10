@@ -4,14 +4,14 @@ import java.util.List;
 
 public interface ItemService {
 
-    Item create(ItemDto itemDto, int ownerId);
+    Item create(ItemDto itemDto, Long ownerId);
 
-    Item update(ItemDto itemDto, int ownerId, int itemId);
+    Item update(ItemDto itemDto, Long ownerId, Long itemId);
 
-    Item get(int id);
+    Item get(Long id);
 
-    List<Item> findAllByOwner(int ownerId);
+    List<Item> getAllByOwner(Long ownerId);
 
-    List<Item> findByText(String text);
+    List<Item> getByText(String text);
 
 }
