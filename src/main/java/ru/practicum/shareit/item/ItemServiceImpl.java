@@ -2,35 +2,156 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingDtoForBookerId;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.tools.Validator;
+import ru.practicum.shareit.tools.exception.*;
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserService;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ItemServiceImpl implements ItemService {
 
-    private final ItemDao itemDao;
+    private final UserService userService;
+    private final ItemRepository itemRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
-    public Item create(ItemDto itemDto, Long ownerId) {
+    @Transactional
+    public Item saveItem(ItemDto itemDto, Long ownerId) {
         Item item = ItemMapper.toItem(itemDto);
-        return itemDao.create(item, ownerId);
+        Validator.allItemValidation(item);
+        userService.getUser(ownerId);
+        item.setOwner(userService.getUser(ownerId));
+        return itemRepository.save(item);
     }
 
-    public Item update(ItemDto itemDto, Long ownerId, Long itemId) {
-        Item item = ItemMapper.toItem(itemDto);
-        return itemDao.update(item, ownerId, itemId);
+    @Transactional
+    public Item updateItem(ItemDto itemDto, Long ownerId, Long itemId) {
+        Item item = checkItemExist(itemId);
+
+        if (!item.getOwner().getId().equals(ownerId)) {
+            throw new NotFoundException("Error! Item has ownerId=" +
+                    item.getOwner().getId() + " but X-Sharer-User-Id ownerId=" + ownerId);
+        }
+
+        if (itemDto.getName() != null) {
+            item.setName(itemDto.getName());
+        }
+        if (itemDto.getDescription() != null) {
+            item.setDescription(itemDto.getDescription());
+        }
+        if (itemDto.getAvailable() != null) {
+            item.setAvailable(itemDto.getAvailable());
+        }
+
+        return itemRepository.save(item);
     }
 
-    public Item get(Long id) {
-        return itemDao.get(id);
+    @Transactional(readOnly = true)
+    public ItemDtoDate getItemDtoDate(Long id, Long ownerId) {
+        Item item = checkItemExist(id);
+        ItemDtoDate itemDtoDate = ItemMapper.toItemDtoDate(item);
+        setLastAndNextFields(itemDtoDate, item, ownerId);
+        itemDtoDate.setComments(getAllCommentsByItemId(id));
+        return itemDtoDate;
     }
 
-    public List<Item> getAllByOwner(Long ownerId) {
-        return itemDao.getAllByOwner(ownerId);
+    @Transactional(readOnly = true)
+    public List<ItemDtoDate> getAllItemByOwner(Long ownerId) {
+        List<Item> items;
+        List<ItemDtoDate> itemsDtoDates = new ArrayList<>();
+        items = itemRepository.findByOwner(userService.getUser(ownerId));
+
+        for (Item item : items) {
+            ItemDtoDate itemDtoDates = ItemMapper.toItemDtoDate(item);
+            setLastAndNextFields(itemDtoDates, item, ownerId);
+            itemsDtoDates.add(itemDtoDates);
+        }
+
+        return itemsDtoDates;
     }
 
-    public List<Item> getByText(String text) {
-        return itemDao.getByText(text);
+    public List<Item> getItemsByText(String text) {
+        if (text.isBlank()) {
+            List<Item> itemList = new ArrayList<>();
+            return itemList;
+        }
+        return itemRepository.getItemsByText(text);
     }
+
+    public CommentDto saveComment(Comment comment, Long itemId, Long userId) {
+        Validator.commentValidation(comment);
+
+        // Проверка, что отзыв на Item может писать только тот, у кого есть
+        // записи в bookins, причем дата окончания меньше чем now
+        Item item = checkItemExist(itemId);
+        User user = userService.getUser(userId);
+        Long l = bookingRepository.countListOfBookersForItem(item, LocalDateTime.now(), user);
+        if (l == 0) {
+            throw new CommentValidateFailException("Comment can send only real booker");
+        }
+
+        comment.setAuthor(user);
+        comment.setItem(item);
+        comment.setCreated(LocalDateTime.now());
+
+        CommentDto commentDto = CommentMapper.toCommentDto(commentRepository.save(comment));
+        commentDto.setAuthorName(comment.getAuthor().getName());
+        return commentDto;
+    }
+
+    public Item checkItemExist(Long id) {
+        Optional<Item> item = itemRepository.findById(id);
+        if (item.isEmpty()) {
+            throw new ItemNotFoundException(id);
+        }
+        return item.get();
+    }
+
+    /**
+     * Вычисление и добавление полей lastBooking и nextBooking для ItemDtoDate
+     */
+    private void setLastAndNextFields(ItemDtoDate itemDtoDate, Item item, Long ownerId) {
+        User owner = userService.getUser(ownerId);
+        LocalDateTime now = LocalDateTime.now();
+        List<Booking> nb = bookingRepository.getAllBookingsForNext(item, now, owner);
+        List<Booking> lb = bookingRepository.getAllBookingsForLast(item, now, owner);
+
+        if (nb.size() > 0) {
+            BookingDtoForBookerId nbDto = new BookingDtoForBookerId();
+            nbDto.setId(nb.get(0).getId());
+            nbDto.setBookerId(nb.get(0).getBooker().getId());
+            itemDtoDate.setNextBooking(nbDto);
+        }
+
+        if (lb.size() > 0) {
+            BookingDtoForBookerId lbDto = new BookingDtoForBookerId();
+            lbDto.setId(lb.get(0).getId());
+            lbDto.setBookerId(lb.get(0).getBooker().getId());
+            itemDtoDate.setLastBooking(lbDto);
+        }
+    }
+
+    private List<CommentDto> getAllCommentsByItemId(Long itemId) {
+        List<Comment> comments = commentRepository.findByItemId(itemId);
+        List<CommentDto> commentsDto = new ArrayList<>();
+        for (Comment comment : comments) {
+            CommentDto commentDto = CommentMapper.toCommentDto(comment);
+            commentDto.setAuthorName(comment.getAuthor().getName());
+            commentsDto.add(commentDto);
+        }
+        return commentsDto;
+    }
+
 
 }

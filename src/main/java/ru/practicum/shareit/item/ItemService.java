@@ -4,14 +4,18 @@ import java.util.List;
 
 public interface ItemService {
 
-    Item create(ItemDto itemDto, Long ownerId);
+    Item saveItem(ItemDto itemDto, Long ownerId);
 
-    Item update(ItemDto itemDto, Long ownerId, Long itemId);
+    Item updateItem(ItemDto itemDto, Long ownerId, Long itemId);
 
-    Item get(Long id);
+    ItemDtoDate getItemDtoDate(Long id, Long ownerId);
 
-    List<Item> getAllByOwner(Long ownerId);
+    List<ItemDtoDate> getAllItemByOwner(Long ownerId);
 
-    List<Item> getByText(String text);
+    List<Item> getItemsByText(String text);
+
+    CommentDto saveComment(Comment comment, Long itemId, Long userId);
+
+    Item checkItemExist(Long id);
 
 }

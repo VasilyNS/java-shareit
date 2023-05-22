@@ -1,3 +1,4 @@
+
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
@@ -22,39 +23,50 @@ public class ItemController {
      * for (String s: headers.keySet()) { System.out.println(s + " = " + headers.get(s)); }
      */
     @PostMapping
-    public Item create(@RequestBody ItemDto itemDto, @RequestHeader Map<String, String> headers) {
+    public Item saveItem(@RequestBody ItemDto itemDto, @RequestHeader Map<String, String> headers) {
         log.info("Begin of Item creation: " + itemDto.toString());
-        Long ownerId = getOwnerId(headers);
-        return itemService.create(itemDto, ownerId);
+        Long ownerId = getCurUserId(headers);
+        return itemService.saveItem(itemDto, ownerId);
     }
 
     @PatchMapping("/{id}")
-    public Item update(@PathVariable Long id, @RequestBody ItemDto itemDto, @RequestHeader Map<String, String> headers) {
+    public Item updateItem(@PathVariable Long id, @RequestBody ItemDto itemDto, @RequestHeader Map<String, String> headers) {
         log.info("Begin of Item updating, id=" + id + ", " + itemDto.toString());
-        Long ownerId = getOwnerId(headers);
-        return itemService.update(itemDto, ownerId, id);
+        Long ownerId = getCurUserId(headers);
+        return itemService.updateItem(itemDto, ownerId, id);
     }
 
     @GetMapping("/{id}")
-    public Item get(@PathVariable Long id) {
+    public ItemDtoDate getItem(@PathVariable Long id, @RequestHeader Map<String, String> headers) {
         log.info("Begin of Item getting, id=" + id);
-        return itemService.get(id);
+        Long ownerId = getCurUserId(headers);
+        return itemService.getItemDtoDate(id, ownerId);
     }
 
     @GetMapping
-    public List<Item> getAllByOwner(@RequestHeader Map<String, String> headers) {
+    public List<ItemDtoDate> getAllItemByOwner(@RequestHeader Map<String, String> headers) {
         log.info("Begin of Item findAllByOwner");
-        Long ownerId = getOwnerId(headers);
-        return itemService.getAllByOwner(ownerId);
+        Long ownerId = getCurUserId(headers);
+        return itemService.getAllItemByOwner(ownerId);
     }
 
     @GetMapping("/search")
-    public List<Item> getByText(@RequestParam String text) {
+    public List<Item> getItemsByText(@RequestParam String text) {
         log.info("Begin of Item findByText, text=" + text);
-        return itemService.getByText(text);
+        return itemService.getItemsByText(text);
     }
 
-    private Long getOwnerId(Map<String, String> headers) {
+    @PostMapping("/{itemId}/comment")
+    public CommentDto saveComment(@PathVariable Long itemId,
+                            @RequestBody Comment comment,
+                            @RequestHeader Map<String, String> headers) {
+        log.info("Begin of Comment creation: " + comment.toString());
+        Long userId = getCurUserId(headers);
+        return itemService.saveComment(comment, itemId, userId);
+    }
+
+
+    private Long getCurUserId(Map<String, String> headers) {
         return Long.parseLong(headers.get(Const.X_OWNER));
     }
 
