@@ -12,7 +12,8 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "users", schema = "public")
-@Getter @Setter //  //@Data - не рекомендуется!
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
