@@ -160,7 +160,7 @@ public class BookingServiceImpl implements BookingService {
     /**
      * Заполнение booking из bookingDto
      */
-    Booking fillBookingFormBookingDtoForSave(BookingDto bookingDto, Long ownerId) {
+    private Booking fillBookingFormBookingDtoForSave(BookingDto bookingDto, Long ownerId) {
         Booking booking = new Booking();
         booking.setItem(itemService.checkItemExist(bookingDto.getItemId()));
         booking.setBooker(userService.getUser(ownerId));
