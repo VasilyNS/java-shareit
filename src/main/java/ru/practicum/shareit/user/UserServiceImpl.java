@@ -3,11 +3,12 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import ru.practicum.shareit.tools.Validator;
-import ru.practicum.shareit.tools.exception.*;
+import ru.practicum.shareit.tools.exception.UserNotFoundException;
+import ru.practicum.shareit.tools.exception.ValidationException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -45,7 +46,7 @@ public class UserServiceImpl implements UserService {
 
         // Проверка email на корректность и не дубликат
         User userForCheck = UserMapper.toUser(userDto);
-        if (userForCheck.getEmail() != null && !userForCheck.getEmail().isBlank()) {
+        if (StringUtils.hasText(userForCheck.getEmail())) {
             Validator.userEmailValidation(userForCheck);
             User userForEmailCheck = userRepository.findByEmail(userForCheck.getEmail());
             if (userForEmailCheck != null) {
@@ -92,12 +93,8 @@ public class UserServiceImpl implements UserService {
      * Проверка, что пользователь существует,
      * если нет - исключение, если да - возврат его самого
      */
-    private User checkUserExist(Long id) {
-        Optional<User> user = userRepository.findById(id);
-        if (user.isEmpty()) {
-            throw new UserNotFoundException(id);
-        }
-        return user.get();
+    public User checkUserExist(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
 }

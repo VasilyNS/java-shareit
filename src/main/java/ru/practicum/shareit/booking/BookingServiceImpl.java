@@ -6,13 +6,15 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.tools.Validator;
-import ru.practicum.shareit.tools.exception.*;
+import ru.practicum.shareit.tools.exception.BookingValidateFailException;
+import ru.practicum.shareit.tools.exception.ItemValidateFailException;
+import ru.practicum.shareit.tools.exception.NotFoundException;
+import ru.practicum.shareit.tools.exception.ValidationException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,28 +27,17 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional
     public Booking saveBooking(BookingDto bookingDto, Long ownerId) {
-        Booking booking = new Booking();
-
         // Если предмет недоступен, выдаем ошибку
-        Long itemId = bookingDto.getItemId();
-        Item item = itemService.checkItemExist(itemId);
-        if (!item.getAvailable()) {
-            throw new ItemValidateFailException("Attempting to create a booking for an unavailable item!");
-        }
+        checkBookingItemExist(bookingDto);
 
         // Запрет на бронирование своих предметов
-        if (item.getOwner().getId().equals(ownerId)) {
-            throw new NotFoundException("Attempting to create booking form item's owner");
-        }
+        checkBookingOwnItems(bookingDto, ownerId);
 
         // Всевозможные проверки начала и конца бронирования полученного объекта
-        Validator.allBookingValidation(bookingDto);
+        Validator.bookingDatesValidation(bookingDto);
 
-        booking.setItem(itemService.checkItemExist(bookingDto.getItemId()));
-        booking.setBooker(userService.getUser(ownerId));
-        booking.setStart(bookingDto.getStart());
-        booking.setEnd(bookingDto.getEnd());
-        booking.setStatus(BookingStatus.WAITING);
+        // Заполнение booking из bookingDto
+        Booking booking = fillBookingFormBookingDtoForSave(bookingDto, ownerId);
 
         return bookingRepository.save(booking);
     }
@@ -73,8 +64,8 @@ public class BookingServiceImpl implements BookingService {
         } else {
             throw new BookingValidateFailException("Value 'approved' must be only 'true' or 'false'");
         }
-        return bookingRepository.save(booking);
 
+        return bookingRepository.save(booking);
     }
 
     public Booking getBookingById(Long id, Long ownerId) {
@@ -89,68 +80,94 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    public List<Booking> getAllBookingsForBooker(Long bookerId, String state) {
+    /**
+     * booker = true -> ForBooker
+     * booker = false -> ForOwner
+     */
+    public List<Booking> getAllBookings(Long bookerId, String state, boolean booker) {
         User user = userService.getUser(bookerId);
         LocalDateTime now = LocalDateTime.now();
 
         switch (state) {
             case "ALL": // Все
-                return bookingRepository.getAllBookingsForBookerStatusAll(user);
-
+                if (booker) {
+                    return bookingRepository.findBookingsForBookerStatusAll(user);
+                } else {
+                    return bookingRepository.findBookingsForOwnerStatusAll(user);
+                }
             case "FUTURE": // Будущие
-                return bookingRepository.getAllBookingsForBookerStatusFuture(user, now);
-
+                if (booker) {
+                    return bookingRepository.findBookingsForBookerStatusFuture(user, now);
+                } else {
+                    return bookingRepository.findBookingsForOwnerStatusFuture(user, now);
+                }
             case "WAITING": // Ожидающие подтверждения
-                return bookingRepository.getAllBookingsForBookerStatusWaiting(user, now);
-
+                if (booker) {
+                    return bookingRepository.findBookingsForBookerStatusWaiting(user, now);
+                } else {
+                    return bookingRepository.findBookingsForOwnerStatusWaiting(user, now);
+                }
             case "REJECTED": // Отклонённые
-                return bookingRepository.getAllBookingsForBookerStatusRejected(user, now);
-
+                if (booker) {
+                    return bookingRepository.findBookingsForBookerStatusRejected(user, now);
+                } else {
+                    return bookingRepository.findBookingsForOwnerStatusRejected(user, now);
+                }
             case "CURRENT": // Текущие
-                return bookingRepository.getAllBookingsForBookerStatusCurrent(user, now);
-
+                if (booker) {
+                    return bookingRepository.findBookingsForBookerStatusCurrent(user, now);
+                } else {
+                    return bookingRepository.findBookingsForOwnerStatusCurrent(user, now);
+                }
             case "PAST": // Завершённые
-                return bookingRepository.getAllBookingsForBookerStatusPast(user, now);
-
-            default:
-                throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
-        }
-    }
-
-    public List<Booking> getAllBookingsForOwner(Long ownerId, String state) {
-        User user = userService.getUser(ownerId);
-        LocalDateTime now = LocalDateTime.now();
-
-        switch (state) {
-            case "ALL": // Все
-                return bookingRepository.getAllBookingsForOwnerStatusAll(user);
-
-            case "FUTURE": // Будущие
-                return bookingRepository.getAllBookingsForOwnerStatusFuture(user, now);
-
-            case "WAITING": // Ожидающие подтверждения
-                return bookingRepository.getAllBookingsForOwnerStatusWaiting(user, now);
-
-            case "REJECTED": // Отклонённые
-                return bookingRepository.getAllBookingsForOwnerStatusRejected(user, now);
-
-            case "CURRENT": // Текущие
-                return bookingRepository.getAllBookingsForOwnerStatusCurrent(user, now);
-
-            case "PAST": // Завершённые
-                return bookingRepository.getAllBookingsForOwnerStatusPast(user, now);
-
+                if (booker) {
+                    return bookingRepository.findBookingsForBookerStatusPast(user, now);
+                } else {
+                    return bookingRepository.findBookingsForOwnerStatusPast(user, now);
+                }
             default:
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
     }
 
     private Booking checkBookingExist(Long id) {
-        Optional<Booking> booking = bookingRepository.findById(id);
-        if (booking.isEmpty()) {
-            throw new NotFoundException("Booking not found, id=" + id);
+        // При использовании Optional<T> в методе можно упростить запись:
+        return bookingRepository.findById(id).orElseThrow(() -> new NotFoundException("Booking not found, id=" + id));
+    }
+
+    /**
+     * Если предмет недоступен, выдаем ошибку
+     */
+    private void checkBookingItemExist(BookingDto bookingDto) {
+        Long itemId = bookingDto.getItemId();
+        Item item = itemService.checkItemExist(itemId);
+        if (!item.getAvailable()) {
+            throw new ItemValidateFailException("Attempting to create a booking for an unavailable item!");
         }
-        return booking.get();
+    }
+
+    /**
+     * Запрет на бронирование своих предметов
+     */
+    private void checkBookingOwnItems(BookingDto bookingDto, Long ownerId) {
+        Long itemId = bookingDto.getItemId();
+        Item item = itemService.checkItemExist(itemId);
+        if (item.getOwner().getId().equals(ownerId)) {
+            throw new NotFoundException("Attempting to create booking form item's owner");
+        }
+    }
+
+    /**
+     * Заполнение booking из bookingDto
+     */
+    Booking fillBookingFormBookingDtoForSave(BookingDto bookingDto, Long ownerId) {
+        Booking booking = new Booking();
+        booking.setItem(itemService.checkItemExist(bookingDto.getItemId()));
+        booking.setBooker(userService.getUser(ownerId));
+        booking.setStart(bookingDto.getStart());
+        booking.setEnd(bookingDto.getEnd());
+        booking.setStatus(BookingStatus.WAITING);
+        return booking;
     }
 
 }

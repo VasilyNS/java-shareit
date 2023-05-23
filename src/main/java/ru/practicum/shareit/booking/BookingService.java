@@ -10,8 +10,6 @@ public interface BookingService {
 
     Booking getBookingById(Long id, Long ownerId);
 
-    List<Booking> getAllBookingsForBooker(Long bookerId, String state);
-
-    List<Booking> getAllBookingsForOwner(Long ownerId, String state);
+    List<Booking> getAllBookings(Long userId, String state, boolean booker);
 
 }

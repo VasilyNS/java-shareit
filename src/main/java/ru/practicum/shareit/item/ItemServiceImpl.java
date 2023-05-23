@@ -3,18 +3,20 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingDtoForBookerId;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.tools.Validator;
-import ru.practicum.shareit.tools.exception.*;
+import ru.practicum.shareit.tools.exception.CommentValidateFailException;
+import ru.practicum.shareit.tools.exception.ItemNotFoundException;
+import ru.practicum.shareit.tools.exception.NotFoundException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class ItemServiceImpl implements ItemService {
     public Item saveItem(ItemDto itemDto, Long ownerId) {
         Item item = ItemMapper.toItem(itemDto);
         Validator.allItemValidation(item);
-        userService.getUser(ownerId);
+        userService.checkUserExist(ownerId);
         item.setOwner(userService.getUser(ownerId));
         return itemRepository.save(item);
     }
@@ -82,7 +84,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public List<Item> getItemsByText(String text) {
-        if (text.isBlank()) {
+        if (!StringUtils.hasText(text)) {
             List<Item> itemList = new ArrayList<>();
             return itemList;
         }
@@ -111,11 +113,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public Item checkItemExist(Long id) {
-        Optional<Item> item = itemRepository.findById(id);
-        if (item.isEmpty()) {
-            throw new ItemNotFoundException(id);
-        }
-        return item.get();
+        return itemRepository.findById(id).orElseThrow(() -> new ItemNotFoundException(id));
     }
 
     /**

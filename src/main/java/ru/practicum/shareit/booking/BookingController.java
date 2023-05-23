@@ -51,10 +51,10 @@ public class BookingController {
      */
     @GetMapping
     public List<Booking> getAllBookingsForBooker(@RequestParam(defaultValue = "ALL") String state,
-                                               @RequestHeader Map<String, String> headers) {
+                                                 @RequestHeader Map<String, String> headers) {
         log.info("Begin of getting all Bookings for user as Booker");
         Long bookerId = getCurUserId(headers);
-        return bookingService.getAllBookingsForBooker(bookerId, state);
+        return bookingService.getAllBookings(bookerId, state, true);
     }
 
     /**
@@ -64,10 +64,10 @@ public class BookingController {
      */
     @GetMapping("/owner")
     public List<Booking> getAllBookingsForOwner(@RequestParam(defaultValue = "ALL") String state,
-                                                 @RequestHeader Map<String, String> headers) {
+                                                @RequestHeader Map<String, String> headers) {
         log.info("Begin of getting all Bookings for user as Owner");
         Long ownerId = getCurUserId(headers);
-        return bookingService.getAllBookingsForOwner(ownerId, state);
+        return bookingService.getAllBookings(ownerId, state, false);
     }
 
     private Long getCurUserId(Map<String, String> headers) {

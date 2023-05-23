@@ -20,36 +20,36 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("select b from Booking b " +
             "where b.booker = ?1 " +
             "order by b.start desc ")
-    List<Booking> getAllBookingsForBookerStatusAll(User booker);
+    List<Booking> findBookingsForBookerStatusAll(User booker);
 
     @Query("select b from Booking b " +
             "where b.booker = ?1 " +
             "and b.start > ?2 " +
             "order by b.start desc ")
-    List<Booking> getAllBookingsForBookerStatusFuture(User booker, LocalDateTime now);
+    List<Booking> findBookingsForBookerStatusFuture(User booker, LocalDateTime now);
 
     @Query("select b from Booking b " +
             "where b.booker = ?1 " +
             "and b.status = 'WAITING' ")
-    List<Booking> getAllBookingsForBookerStatusWaiting(User booker, LocalDateTime now);
+    List<Booking> findBookingsForBookerStatusWaiting(User booker, LocalDateTime now);
 
     @Query("select b from Booking b " +
             "where b.booker = ?1 " +
             "and b.status = 'REJECTED' ")
-    List<Booking> getAllBookingsForBookerStatusRejected(User booker, LocalDateTime now);
+    List<Booking> findBookingsForBookerStatusRejected(User booker, LocalDateTime now);
 
     @Query("select b from Booking b " +
             "where b.booker = ?1 " +
             "and b.start < ?2 " +
             "and b.end > ?2 " +
             "order by b.start desc ")
-    List<Booking> getAllBookingsForBookerStatusCurrent(User booker, LocalDateTime now);
+    List<Booking> findBookingsForBookerStatusCurrent(User booker, LocalDateTime now);
 
     @Query("select b from Booking b " +
             "where b.booker = ?1 " +
             "and b.end < ?2 " +
             "order by b.start desc ")
-    List<Booking> getAllBookingsForBookerStatusPast(User booker, LocalDateTime now);
+    List<Booking> findBookingsForBookerStatusPast(User booker, LocalDateTime now);
 
 
     // Блок для Booking / owner -----------------------------------------------------
@@ -58,26 +58,26 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "join b.item i " +
             "where i.owner = ?1 " +
             "order by b.start desc ")
-    List<Booking> getAllBookingsForOwnerStatusAll(User owner);
+    List<Booking> findBookingsForOwnerStatusAll(User owner);
 
     @Query("select b from Booking b " +
             "join b.item i " +
             "where i.owner = ?1 " +
             "and b.start > ?2 " +
             "order by b.start desc ")
-    List<Booking> getAllBookingsForOwnerStatusFuture(User owner, LocalDateTime now);
+    List<Booking> findBookingsForOwnerStatusFuture(User owner, LocalDateTime now);
 
     @Query("select b from Booking b " +
             "join b.item i " +
             "where i.owner = ?1 " +
             "and b.status = 'WAITING' ")
-    List<Booking> getAllBookingsForOwnerStatusWaiting(User owner, LocalDateTime now);
+    List<Booking> findBookingsForOwnerStatusWaiting(User owner, LocalDateTime now);
 
     @Query("select b from Booking b " +
             "join b.item i " +
             "where i.owner = ?1 " +
             "and b.status = 'REJECTED' ")
-    List<Booking> getAllBookingsForOwnerStatusRejected(User owner, LocalDateTime now);
+    List<Booking> findBookingsForOwnerStatusRejected(User owner, LocalDateTime now);
 
     @Query("select b from Booking b " +
             "join b.item i " +
@@ -85,14 +85,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "and b.start < ?2 " +
             "and b.end > ?2 " +
             "order by b.start desc ")
-    List<Booking> getAllBookingsForOwnerStatusCurrent(User user, LocalDateTime now);
+    List<Booking> findBookingsForOwnerStatusCurrent(User user, LocalDateTime now);
 
     @Query("select b from Booking b " +
             "join b.item i " +
             "where i.owner = ?1 " +
             "and b.end < ?2 " +
             "order by b.start desc ")
-    List<Booking> getAllBookingsForOwnerStatusPast(User user, LocalDateTime now);
+    List<Booking> findBookingsForOwnerStatusPast(User user, LocalDateTime now);
 
 
     // Блок для last / next -----------------------------------------------------

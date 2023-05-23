@@ -58,8 +58,8 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public CommentDto saveComment(@PathVariable Long itemId,
-                            @RequestBody Comment comment,
-                            @RequestHeader Map<String, String> headers) {
+                                  @RequestBody Comment comment,
+                                  @RequestHeader Map<String, String> headers) {
         log.info("Begin of Comment creation: " + comment.toString());
         Long userId = getCurUserId(headers);
         return itemService.saveComment(comment, itemId, userId);
