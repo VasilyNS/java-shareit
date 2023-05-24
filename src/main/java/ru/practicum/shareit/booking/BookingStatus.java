@@ -9,6 +9,14 @@ package ru.practicum.shareit.booking;
  * CANCELED=4 — бронирование отменено создателем.<br>
  */
 public enum BookingStatus {
+    WAITING,
+    APPROVED,
+    REJECTED,
+    CANCELED
+}
+
+/*
+    Версия, если нужно принудительно прикреплять числовые индексы
     WAITING(1),
     APPROVED(2),
     REJECTED(3),
@@ -23,5 +31,4 @@ public enum BookingStatus {
     public int getCode() {
         return code;
     }
-
-}
+ */

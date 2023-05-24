@@ -15,33 +15,33 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public User create(@RequestBody UserDto userDto) {
+    public User saveUser(@RequestBody UserDto userDto) {
         log.info("Begin of User creation: " + userDto.toString());
-        return userService.create(userDto);
+        return userService.saveUser(userDto);
     }
 
     @PatchMapping("/{id}")
-    public User update(@PathVariable Long id, @RequestBody UserDto userDto) {
+    public User updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
         log.info("Begin of User updating, id=" + id + ", " + userDto.toString());
-        return userService.update(id, userDto);
+        return userService.updateUser(id, userDto);
     }
 
     @GetMapping("/{id}")
-    public User get(@PathVariable Long id) {
+    public User getUser(@PathVariable Long id) {
         log.info("Begin of User getting, id=" + id);
-        return userService.get(id);
+        return userService.getUser(id);
     }
 
     @GetMapping
-    public List<User> getAll() {
+    public List<User> getAllUsers() {
         log.info("Begin of User getAll");
-        return userService.getAll();
+        return userService.getAllUsers();
     }
 
     @DeleteMapping("/{id}")
     public void del(@PathVariable Long id) {
         log.info("Begin of User deleting, id=" + id);
-        userService.del(id);
+        userService.deleteUser(id);
     }
 
 }

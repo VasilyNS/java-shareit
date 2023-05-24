@@ -1,11 +1,11 @@
-package ru.practicum.shareit.tools.error;
+package ru.practicum.shareit.tools.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.shareit.tools.exception.*;
+import ru.practicum.shareit.tools.ErrorResponse;
 
 @Slf4j
 @RestControllerAdvice
@@ -42,6 +42,20 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
     public ErrorResponse handleItemValidateFailException(final ItemValidateFailException e) {
+        log.warn(e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
+    public ErrorResponse handleBookingValidateFailException(final BookingValidateFailException e) {
+        log.warn(e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST) // 400
+    public ErrorResponse handleCommentValidateFailException(final CommentValidateFailException e) {
         log.warn(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
