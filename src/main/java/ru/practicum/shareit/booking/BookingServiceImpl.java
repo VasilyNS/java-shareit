@@ -1,10 +1,14 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemService;
+import ru.practicum.shareit.tools.Const;
 import ru.practicum.shareit.tools.Validator;
 import ru.practicum.shareit.tools.exception.BookingValidateFailException;
 import ru.practicum.shareit.tools.exception.ItemValidateFailException;
@@ -84,16 +88,29 @@ public class BookingServiceImpl implements BookingService {
      * booker = true -> ForBooker
      * booker = false -> ForOwner
      */
-    public List<Booking> getAllBookings(Long bookerId, String state, boolean booker) {
+    public List<Booking> getAllBookings(Long bookerId, String state, boolean booker, Long from, Long size) {
         User user = userService.getUser(bookerId);
+        Validator.pageableValidation(from, size);
         LocalDateTime now = LocalDateTime.now();
+
+        int pageFrom;
+        int pageSize;
+        if (from == null || size == null) { // Если не задана пагинация, то выбираем все, но всё равно с ограничением!
+            pageFrom = 0;
+            pageSize = Const.MAX_PAGE_SIZE; // Ограничение выдачи больших списков для защиты от флуда
+        } else  {
+            pageFrom = Math.toIntExact(from / size); // Конвертация начала страницы в номер элемента
+            pageSize = Math.toIntExact(size);
+        }
+        Sort sort = Sort.by(Sort.Direction.ASC, "id");
+        Pageable page = PageRequest.of(pageFrom, pageSize, sort);
 
         switch (state) {
             case "ALL": // Все
                 if (booker) {
-                    return bookingRepository.findBookingsForBookerStatusAll(user);
+                    return bookingRepository.findBookingsForBookerStatusAll(user, page);
                 } else {
-                    return bookingRepository.findBookingsForOwnerStatusAll(user);
+                    return bookingRepository.findBookingsForOwnerStatusAll(user, page);
                 }
             case "FUTURE": // Будущие
                 if (booker) {

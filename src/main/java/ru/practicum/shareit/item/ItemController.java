@@ -23,7 +23,7 @@ public class ItemController {
      * for (String s: headers.keySet()) { System.out.println(s + " = " + headers.get(s)); }
      */
     @PostMapping
-    public Item saveItem(@RequestBody ItemDto itemDto, @RequestHeader Map<String, String> headers) {
+    public ItemDto saveItem(@RequestBody ItemDto itemDto, @RequestHeader Map<String, String> headers) {
         log.info("Begin of Item creation: " + itemDto.toString());
         Long ownerId = getCurUserId(headers);
         return itemService.saveItem(itemDto, ownerId);
@@ -64,7 +64,6 @@ public class ItemController {
         Long userId = getCurUserId(headers);
         return itemService.saveComment(comment, itemId, userId);
     }
-
 
     private Long getCurUserId(Map<String, String> headers) {
         return Long.parseLong(headers.get(Const.X_OWNER));

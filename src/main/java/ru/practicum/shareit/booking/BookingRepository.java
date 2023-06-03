@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.item.Item;
@@ -20,7 +21,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("select b from Booking b " +
             "where b.booker = ?1 " +
             "order by b.start desc ")
-    List<Booking> findBookingsForBookerStatusAll(User booker);
+    List<Booking> findBookingsForBookerStatusAll(User booker, Pageable page);
 
     @Query("select b from Booking b " +
             "where b.booker = ?1 " +
@@ -51,14 +52,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "order by b.start desc ")
     List<Booking> findBookingsForBookerStatusPast(User booker, LocalDateTime now);
 
-
     // Блок для Booking / owner -----------------------------------------------------
 
     @Query("select b from Booking b " +
             "join b.item i " +
             "where i.owner = ?1 " +
             "order by b.start desc ")
-    List<Booking> findBookingsForOwnerStatusAll(User owner);
+    List<Booking> findBookingsForOwnerStatusAll(User owner, Pageable page);
 
     @Query("select b from Booking b " +
             "join b.item i " +
@@ -93,7 +93,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "and b.end < ?2 " +
             "order by b.start desc ")
     List<Booking> findBookingsForOwnerStatusPast(User user, LocalDateTime now);
-
 
     // Блок для last / next -----------------------------------------------------
 

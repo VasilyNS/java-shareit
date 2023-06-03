@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface ItemService {
 
-    Item saveItem(ItemDto itemDto, Long ownerId);
+    ItemDto saveItem(ItemDto itemDto, Long ownerId);
 
     Item updateItem(ItemDto itemDto, Long ownerId, Long itemId);
 
