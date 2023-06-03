@@ -41,8 +41,8 @@ public class RequestServiceImpl implements RequestService {
         request.setRequestor(user);
         request.setCreated(LocalDateTime.now());
 
-        RequestDto outRequestDto = RequestMapper.
-                toRequestDto(requestRepository.save(request));
+        RequestDto outRequestDto = RequestMapper
+                .toRequestDto(requestRepository.save(request));
 
         return outRequestDto;
     }

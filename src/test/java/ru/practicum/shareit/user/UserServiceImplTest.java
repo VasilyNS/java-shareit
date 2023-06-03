@@ -37,7 +37,7 @@ class UserServiceImplTest {
     private UserDto tUser2Dto;
     private UserDto tUser3Dto;
 
-    private void AddNew3TestUsers() {
+    private void addNew3TestUsers() {
         tUser1Dto = new UserDto(0L, "testuser1","tuser1@qq.com");
         tUser2Dto = new UserDto(0L, "testuser2","tuser2@qq.com");
         tUser3Dto = new UserDto(0L, "testuser3","tuser3@qq.com");
@@ -48,7 +48,7 @@ class UserServiceImplTest {
 
     @Test
     void saveUserTest() {
-        AddNew3TestUsers();
+        addNew3TestUsers();
 
         User tUser = userService.getUser(3L);
 
@@ -88,7 +88,7 @@ class UserServiceImplTest {
 
         assertEquals(0, l.size());
 
-        AddNew3TestUsers();
+        addNew3TestUsers();
 
         l = userService.getAllUsers();
         User tUser = l.get(2); // Отчет с нуля, это get из List, т.е. элемент с id=3!
@@ -105,7 +105,7 @@ class UserServiceImplTest {
         List<User> l = userService.getAllUsers();
         assertEquals(0, l.size());
 
-        AddNew3TestUsers();
+        addNew3TestUsers();
 
         l = userService.getAllUsers();
         assertEquals(3, l.size());
