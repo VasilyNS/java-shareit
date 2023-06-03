@@ -16,6 +16,7 @@ import javax.persistence.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class User {
 
     @Id
