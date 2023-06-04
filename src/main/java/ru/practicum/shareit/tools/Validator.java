@@ -1,14 +1,13 @@
 package ru.practicum.shareit.tools;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import ru.practicum.shareit.booking.BookingDto;
 import ru.practicum.shareit.item.Comment;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.request.RequestDto;
 import ru.practicum.shareit.tools.exception.*;
 import ru.practicum.shareit.user.User;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +15,6 @@ import java.time.LocalDateTime;
  * Валидация статическими методами
  */
 @Slf4j
-@RequiredArgsConstructor
 public class Validator {
 
     public static void userEmailValidation(User user) {

@@ -7,7 +7,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ShareItApp {
 
     public static void main(String[] args) {
-        SpringApplication.run(ShareItApp.class, args);
+
+        if (args.length != 0 && args[0].equals("test")) {
+            System.out.println("ShareItApp test");
+        } else {
+            SpringApplication.run(ShareItApp.class, args);
+        }
+
     }
 
 }
