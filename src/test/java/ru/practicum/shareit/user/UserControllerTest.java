@@ -53,9 +53,9 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("id").value(userDto1.getId()))
-                .andExpect(jsonPath("name").value(userDto1.getName()))
-                .andExpect(jsonPath("email").value(userDto1.getEmail()));
+                .andExpect(jsonPath("$.id").value(userDto1.getId()))
+                .andExpect(jsonPath("$.name").value(userDto1.getName()))
+                .andExpect(jsonPath("$.email").value(userDto1.getEmail()));
     }
 
     @Test
@@ -68,9 +68,9 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("id").value(userDto1.getId()))
-                .andExpect(jsonPath("name").value(userDto1.getName()))
-                .andExpect(jsonPath("email").value(userDto1.getEmail()));
+                .andExpect(jsonPath("$.id").value(userDto1.getId()))
+                .andExpect(jsonPath("$.name").value(userDto1.getName()))
+                .andExpect(jsonPath("$.email").value(userDto1.getEmail()));
     }
 
     @Test
@@ -83,9 +83,9 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("id").value(userDto1.getId()))
-                .andExpect(jsonPath("name").value(userDto1.getName()))
-                .andExpect(jsonPath("email").value(userDto1.getEmail()));
+                .andExpect(jsonPath("$.id").value(userDto1.getId()))
+                .andExpect(jsonPath("$.name").value(userDto1.getName()))
+                .andExpect(jsonPath("$.email").value(userDto1.getEmail()));
     }
 
     @Test
@@ -97,6 +97,7 @@ class UserControllerTest {
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
+                //.andDo(print()) // Дебаг запроса и ответа для отладки
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].id").value(userDto1.getId()))

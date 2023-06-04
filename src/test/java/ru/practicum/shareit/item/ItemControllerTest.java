@@ -74,11 +74,11 @@ public class ItemControllerTest {
                         .header(Const.X_OWNER, "1"))
                 //.andDo(print()) // Дебаг запроса и ответа для отладки
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("id").value(itemDto1.getId()))
-                .andExpect(jsonPath("name").value(itemDto1.getName()))
-                .andExpect(jsonPath("description").value(itemDto1.getDescription()))
-                .andExpect(jsonPath("available").value(itemDto1.getAvailable()))
-                .andExpect(jsonPath("requestId").value(itemDto1.getRequestId()));
+                .andExpect(jsonPath("$.id").value(itemDto1.getId()))
+                .andExpect(jsonPath("$.name").value(itemDto1.getName()))
+                .andExpect(jsonPath("$.description").value(itemDto1.getDescription()))
+                .andExpect(jsonPath("$.available").value(itemDto1.getAvailable()))
+                .andExpect(jsonPath("$.requestId").value(itemDto1.getRequestId()));
     }
 
     @Test

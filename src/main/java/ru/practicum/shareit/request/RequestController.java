@@ -17,7 +17,7 @@ public class RequestController {
     private final RequestService requestService;
 
     @PostMapping
-    public RequestDto saveItem(@RequestBody RequestDto requestDto, @RequestHeader Map<String, String> headers) {
+    public RequestDto saveRequest(@RequestBody RequestDto requestDto, @RequestHeader Map<String, String> headers) {
         log.info("Begin of Request creation: " + requestDto.toString());
         Long userId = getCurUserId(headers);
         return requestService.saveRequest(requestDto, userId);
