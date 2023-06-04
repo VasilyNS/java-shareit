@@ -1,39 +1,29 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingDto;
 import ru.practicum.shareit.booking.BookingService;
-import ru.practicum.shareit.request.Request;
-import ru.practicum.shareit.request.RequestDto;
-import ru.practicum.shareit.request.RequestMapper;
-import ru.practicum.shareit.request.RequestService;
-import ru.practicum.shareit.tools.exception.CommentValidateFailException;
+import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserDto;
 import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
-/**
- * Пример интеграционного теста для разных взаимосвязанных сущностей и сервисов
- */
 @SpringBootTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Transactional
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
-class ItemServiceImplTest {
+class RequestServiceImplTest {
 
     private UserDto userDto1;
     private UserDto userDto2;
@@ -73,83 +63,53 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void saveItemTest() {
-        addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
-        ItemDto itemDto2 = itemService.saveItem(itemDto1, 2L);
-
-        assertEquals("Тестовый предмет 1", itemService.checkItemExist(1L).getName());
-    }
-
-    @Test
-    void updateItem() {
+    void getRequestsOwnTest() {
         addNewTestItems();
         requestService.saveRequest(requestDto1, 3L);
         itemService.saveItem(itemDto1, 2L);
-
-        assertEquals("Тестовый предмет 1", itemService.checkItemExist(1L).getName());
-
-        itemDto1.setName("Тестовый предмет UPDATE");
-        itemDto1.setDescription("Описание UPDATE");
-        itemDto1.setAvailable(false);
-        itemService.updateItem(itemDto1, 2L, 1L);
-
-        assertEquals("Тестовый предмет UPDATE", itemService.checkItemExist(1L).getName());
-    }
-
-    @Test
-    void getItemDtoDateTest() {
-        addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
-        itemService.saveItem(itemDto1, 2L);
-
-        assertEquals("Тестовый предмет 1", itemService.getItemDtoDate(1L, 2L).getName());
-    }
-
-    @Test
-    void getAllItemByOwnerTest() {
-        addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
-        itemService.saveItem(itemDto1, 2L);
-
-        List<ItemDtoDate> l = itemService.getAllItemByOwner(2L);
-        assertEquals(1, l.size());
-    }
-
-    @Test
-    void getItemsByTextTest() {
-        addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
-        itemService.saveItem(itemDto1, 2L);
-
-        List<Item> l = itemService.getItemsByText("преДмет");
-        assertEquals(1, l.size());
-    }
-
-    @Test
-    void saveCommentTest() throws InterruptedException {
-        addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
-        itemService.saveItem(itemDto1, 2L);
-
-        final CommentValidateFailException e = assertThrows(CommentValidateFailException.class,
-                new Executable() {
-                    @Override
-                    public void execute() {
-                        itemService.saveComment(comment1, 1L, 1L);
-                    }
-                });
-
-        // Без бронирования нельзя сохрянать комменты! Бронирование на 3 секундны в будущем
         bookingService.saveBooking(bookingDto1, 1L);
 
-        // Переносимся на 7 секунд в будущее чтобы можно было сохранить комментарий
-        TimeUnit.SECONDS.sleep(7);
-        itemService.saveComment(comment1, 1L, 1L);
-        comment1.getItem();
+        // Пользователь с id=3 создал запрос
+        List<RequestDto> l = requestService.getRequestsOwn(3L);
 
-        assertEquals("Тестовый комментарий", itemService.getItemDtoDate(1L, 2L).getComments().get(0).getText());
+        assertEquals(1, l.size());
+        assertEquals("Описание запроса", l.get(0).getDescription());
+        assertEquals("Описание 1", l.get(0).getItems().get(0).getDescription());
+
+        l = requestService.getRequestsOwn(1L);
+        assertEquals(0, l.size());
     }
 
+    @Test
+    void getRequestsAllTest() {
+        addNewTestItems();
+        requestService.saveRequest(requestDto1, 3L);
+        itemService.saveItem(itemDto1, 2L);
+        bookingService.saveBooking(bookingDto1, 1L);
+
+        // Пользователь с id=2 владелец вещи
+        List<RequestDto> l = requestService.getRequestsAll(2L, null, null);
+
+        assertEquals(1, l.size());
+        assertEquals("Описание запроса", l.get(0).getDescription());
+        assertEquals("Описание 1", l.get(0).getItems().get(0).getDescription());
+
+        l = requestService.getRequestsAll(3L, null, null);
+        assertEquals(0, l.size());
+    }
+
+    @Test
+    void getRequestByIdTest() {
+        addNewTestItems();
+        requestService.saveRequest(requestDto1, 3L);
+        itemService.saveItem(itemDto1, 2L);
+        bookingService.saveBooking(bookingDto1, 1L);
+
+        RequestDto r = requestService.getRequestById(1L, 3L);
+
+        assertEquals(1, r.getId());
+        assertEquals("Описание запроса", r.getDescription());
+        assertEquals("tuser3@qq.com", r.getRequestor().getEmail());
+    }
 
 }

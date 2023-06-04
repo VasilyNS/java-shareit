@@ -45,6 +45,7 @@ class BookingServiceImplTest {
     private Comment comment1;
     private CommentDto commentDto1;
     private BookingDto bookingDto1;
+    private BookingDtoForBookerId bookingDtoForBookerId1;
 
     private final UserService userService;
     private final ItemService itemService;
@@ -66,6 +67,7 @@ class BookingServiceImplTest {
         comment1 = new Comment(0L, "Тестовый комментарий", item1, user1, LocalDateTime.now());
         commentDto1 = new CommentDto(0L, "Тестовый комментарий", "", LocalDateTime.now());
         bookingDto1 = new BookingDto(1L, LocalDateTime.now().plusSeconds(3), LocalDateTime.now().plusSeconds(4));
+        bookingDtoForBookerId1 = new BookingDtoForBookerId(1L, 1L);
     }
 
     @Test

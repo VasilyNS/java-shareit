@@ -18,15 +18,16 @@ public class ErrorAndToolTest {
     }
 
     /**
-    В этом проекте код ошибки в методах класса ErrorHandler получается через аннотации вида
-    @ ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    а возвращается только примитивный класс ErrorResponse, поэтому протестировать код ошибки невозможно,
-    тестируем только сообщение об ошибке.
-    Для тестирования кода ошибки нужно переписывать методы класса ErrorHandler на конструкции вида:
-    public ResponseEntity<Map<String, String>> handleNotFound(final NotFoundException e) {
-        return new ResponseEntity<>(Map.of("message", e.getMessage()),HttpStatus.NOT_FOUND);
-    }
-    */
+     * В этом проекте код ошибки в методах класса ErrorHandler получается через аннотации вида
+     *
+     * @ ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+     * а возвращается только примитивный класс ErrorResponse, поэтому протестировать код ошибки невозможно,
+     * тестируем только сообщение об ошибке.
+     * Для тестирования кода ошибки нужно переписывать методы класса ErrorHandler на конструкции вида:
+     * public ResponseEntity<Map<String, String>> handleNotFound(final NotFoundException e) {
+     * return new ResponseEntity<>(Map.of("message", e.getMessage()),HttpStatus.NOT_FOUND);
+     * }
+     */
     @Test
     void errorHandlerTest() {
         ErrorHandler errorHandler = new ErrorHandler();
@@ -83,5 +84,17 @@ public class ErrorAndToolTest {
         sa[0] = "test";
         ShareItApp.main(sa);
     }
+
+    /**
+     * Класс констант - тоже класс! Чтобы было 100% по классам!
+     */
+    @Test
+    void constTest() {
+        Const c = new Const();
+
+        assertEquals("x-sharer-user-id", c.X_OWNER);
+        assertEquals(20000, c.MAX_PAGE_SIZE);
+    }
+
 
 }
