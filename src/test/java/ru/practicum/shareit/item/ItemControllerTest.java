@@ -13,6 +13,7 @@ import org.springframework.web.context.WebApplicationContext;
 import ru.practicum.shareit.booking.BookingDtoForBookerId;
 import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.tools.Const;
+import ru.practicum.shareit.tools.exception.ItemValidateFailException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserDto;
 import ru.practicum.shareit.user.UserService;
@@ -24,6 +25,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -51,9 +53,9 @@ public class ItemControllerTest {
 
     private Item item1 = new Item(1L, "Тестовый предмет 1", "Описание 1", true, user1, request1);
     private ItemDto itemDto1 = new ItemDto(1L, "Тестовый предмет 1", "Описание 1", true, 1L);
+
     private ItemDtoDate itemDtoDate1 = new ItemDtoDate(1L, "Тестовый предмет 1", "Описание 1", true,
             List.of(commentDto1), bookingDtoForBookerId1, bookingDtoForBookerId1, 1L);
-
 
     @BeforeEach
     void setUp(WebApplicationContext wac) {
@@ -61,6 +63,7 @@ public class ItemControllerTest {
                 .webAppContextSetup(wac)
                 .build();
     }
+
 
     @Test
     void saveItemTest() throws Exception {
@@ -79,6 +82,24 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.description").value(itemDto1.getDescription()))
                 .andExpect(jsonPath("$.available").value(itemDto1.getAvailable()))
                 .andExpect(jsonPath("$.requestId").value(itemDto1.getRequestId()));
+    }
+
+    /**
+     * Проверка ошибок для контроллера
+     */
+    @Test
+    void saveItemValidationTest() throws Exception {
+        when(itemService.saveItem(any(), any()))
+                .thenThrow(new ItemValidateFailException("Field 'name' in Item must be not blank"));
+
+        mvc.perform(post("/items")
+                        .content(mapper.writeValueAsString(itemDto1))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(Const.X_OWNER, "1"))
+                .andDo(print()) // Дебаг запроса и ответа для отладки
+                .andExpect(status().isBadRequest());
     }
 
     @Test

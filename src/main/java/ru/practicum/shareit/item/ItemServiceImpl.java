@@ -17,6 +17,7 @@ import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -95,7 +96,7 @@ public class ItemServiceImpl implements ItemService {
 
     public List<Item> getItemsByText(String text) {
         if (!StringUtils.hasText(text)) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         return itemRepository.getItemsByText(text);
     }

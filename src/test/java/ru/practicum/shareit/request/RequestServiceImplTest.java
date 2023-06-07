@@ -35,6 +35,7 @@ class RequestServiceImplTest {
     private Item item1;
     private ItemDto itemDto1;
     private Request request1;
+    private RequestDtoIn requestDtoIn1;
     private RequestDto requestDto1;
     private Comment comment1;
     private CommentDto commentDto1;
@@ -53,6 +54,7 @@ class RequestServiceImplTest {
         user2 = userService.saveUser(userDto2);
         user3 = userService.saveUser(userDto3);
         request1 = new Request(0L, "Описание запроса", user1, LocalDateTime.now());
+        requestDtoIn1 = new RequestDtoIn("Описание запроса");
         requestDto1 = RequestMapper.toRequestDto(request1);
         item1 = new Item(0L, "Тестовый предмет 1", "Описание 1", true, user2, request1);
         itemDto1 = ItemMapper.toItemDto(item1);
@@ -65,7 +67,7 @@ class RequestServiceImplTest {
     @Test
     void getRequestsOwnTest() {
         addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
+        requestService.saveRequest(requestDtoIn1, 3L);
         itemService.saveItem(itemDto1, 2L);
         bookingService.saveBooking(bookingDto1, 1L);
 
@@ -83,7 +85,7 @@ class RequestServiceImplTest {
     @Test
     void getRequestsAllTest() {
         addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
+        requestService.saveRequest(requestDtoIn1, 3L);
         itemService.saveItem(itemDto1, 2L);
         bookingService.saveBooking(bookingDto1, 1L);
 
@@ -101,7 +103,7 @@ class RequestServiceImplTest {
     @Test
     void getRequestByIdTest() {
         addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
+        requestService.saveRequest(requestDtoIn1, 3L);
         itemService.saveItem(itemDto1, 2L);
         bookingService.saveBooking(bookingDto1, 1L);
 

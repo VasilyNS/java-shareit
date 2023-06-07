@@ -8,12 +8,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.item.*;
-import ru.practicum.shareit.request.Request;
-import ru.practicum.shareit.request.RequestDto;
-import ru.practicum.shareit.request.RequestMapper;
-import ru.practicum.shareit.request.RequestService;
+import ru.practicum.shareit.request.*;
 import ru.practicum.shareit.tools.exception.BookingValidateFailException;
 import ru.practicum.shareit.tools.exception.NotFoundException;
+import ru.practicum.shareit.tools.exception.ValidationException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserDto;
 import ru.practicum.shareit.user.UserService;
@@ -41,6 +39,7 @@ class BookingServiceImplTest {
     private Item item1;
     private ItemDto itemDto1;
     private Request request1;
+    private RequestDtoIn requestDtoIn1;
     private RequestDto requestDto1;
     private Comment comment1;
     private CommentDto commentDto1;
@@ -60,6 +59,7 @@ class BookingServiceImplTest {
         user2 = userService.saveUser(userDto2);
         user3 = userService.saveUser(userDto3);
         request1 = new Request(0L, "Описание запроса", user1, LocalDateTime.now());
+        requestDtoIn1 = new RequestDtoIn("Описание запроса");
         requestDto1 = RequestMapper.toRequestDto(request1);
         item1 = new Item(0L, "Тестовый предмет 1", "Описание 1", true, user2, request1);
         itemDto1 = ItemMapper.toItemDto(item1);
@@ -70,10 +70,38 @@ class BookingServiceImplTest {
         bookingDtoForBookerId1 = new BookingDtoForBookerId(1L, 1L);
     }
 
+    /**
+     * Образец проверки валидации дат бронирования
+     */
+    @Test
+    void saveBookingTest() {
+        addNewTestItems();
+        requestService.saveRequest(requestDtoIn1, 3L);
+        itemService.saveItem(itemDto1, 2L);
+
+        // Проверка валидации, что дата начала не может быть позже даты окончания
+        bookingDto1.setStart(LocalDateTime.now().plusMinutes(10));
+        bookingDto1.setStart(LocalDateTime.now().plusMinutes(5));
+
+        final BookingValidateFailException e1 = assertThrows(BookingValidateFailException.class,
+                new Executable() {
+                    @Override
+                    public void execute() {
+                        bookingService.saveBooking(bookingDto1, 1L);
+                    }
+                });
+
+        assertEquals("Booking end before start", e1.getMessage());
+
+        // Далее, все варианты по валидации дат, аналогично "end before start"
+
+    }
+
+
     @Test
     void approveBookingTest() {
         addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
+        requestService.saveRequest(requestDtoIn1, 3L);
         itemService.saveItem(itemDto1, 2L);
 
         // Бронирование на 3 секундны в будущем
@@ -117,13 +145,13 @@ class BookingServiceImplTest {
     @Test
     void getBookingByIdTest() {
         addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
+        requestService.saveRequest(requestDtoIn1, 3L);
         itemService.saveItem(itemDto1, 2L);
         bookingService.saveBooking(bookingDto1, 1L);
 
-        Booking b = bookingService.getBookingById(1L, 1L);
+        BookingDtoOut b = bookingService.getBookingById(1L, 1L);
 
-        assertEquals("testuser1", b.getBooker().getName());
+        assertEquals(1, b.getBooker().getId());
 
         final NotFoundException e = assertThrows(NotFoundException.class,
                 new Executable() {
@@ -140,10 +168,10 @@ class BookingServiceImplTest {
     @Test
     void getAllBookingsTest() {
         addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
+        requestService.saveRequest(requestDtoIn1, 3L);
         itemService.saveItem(itemDto1, 2L);
         bookingService.saveBooking(bookingDto1, 1L);
-        List<Booking> l;
+        List<BookingDtoOut> l;
 
         l = bookingService.getAllBookings(1L, "ALL", false, 0L, 350L);
         assertEquals(0, l.size());
@@ -180,6 +208,43 @@ class BookingServiceImplTest {
 
         l = bookingService.getAllBookings(1L, "PAST", true, null, null);
         assertEquals(0, l.size());
+    }
+
+    /**
+     * Проверка на валидацию пагинации
+     */
+    @Test
+    void getAllBookingsPageableTest() {
+        addNewTestItems();
+        requestService.saveRequest(requestDtoIn1, 3L);
+        itemService.saveItem(itemDto1, 2L);
+        bookingService.saveBooking(bookingDto1, 1L);
+
+        final ValidationException e1 = assertThrows(ValidationException.class,
+                new Executable() {
+                    @Override
+                    public void execute() {
+                        bookingService.getAllBookings(1L, "ALL", false, -1L, 350L);
+                    }
+                });
+
+        final ValidationException e2 = assertThrows(ValidationException.class,
+                new Executable() {
+                    @Override
+                    public void execute() {
+                        bookingService.getAllBookings(1L, "ALL", false, 1L, 0L);
+                    }
+                });
+
+        final ValidationException e3 = assertThrows(ValidationException.class,
+                new Executable() {
+                    @Override
+                    public void execute() {
+                        bookingService.getAllBookings(1L, "ALL", false, 0L, 0L);
+                    }
+                });
 
     }
+
+
 }

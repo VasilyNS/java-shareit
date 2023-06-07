@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import ru.practicum.shareit.tools.exception.UserEmailFailException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -56,6 +57,22 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.id").value(userDto1.getId()))
                 .andExpect(jsonPath("$.name").value(userDto1.getName()))
                 .andExpect(jsonPath("$.email").value(userDto1.getEmail()));
+    }
+
+    /**
+     * Проверка ошибок для контроллера
+     */
+    @Test
+    void saveUserValidationTest() throws Exception {
+        when(userService.saveUser(any()))
+                .thenThrow(new UserEmailFailException("Email cannot be blank and must contain the '@' symbol"));
+
+        mvc.perform(post("/users")
+                        .content(mapper.writeValueAsString(userDto1))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

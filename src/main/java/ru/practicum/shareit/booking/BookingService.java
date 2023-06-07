@@ -4,12 +4,12 @@ import java.util.List;
 
 public interface BookingService {
 
-    Booking saveBooking(BookingDto bookingDto, Long ownerId);
+    BookingDtoOut saveBooking(BookingDto bookingDto, Long ownerId);
 
-    Booking approveBooking(Long id, Long ownerId, String approved);
+    BookingDtoOut approveBooking(Long id, Long ownerId, String approved);
 
-    Booking getBookingById(Long id, Long ownerId);
+    BookingDtoOut getBookingById(Long id, Long ownerId);
 
-    List<Booking> getAllBookings(Long userId, String state, boolean booker, Long from, Long size);
+    List<BookingDtoOut> getAllBookings(Long userId, String state, boolean booker, Long from, Long size);
 
 }

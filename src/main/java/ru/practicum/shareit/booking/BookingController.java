@@ -17,26 +17,26 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    public Booking saveBooking(@RequestBody BookingDto bookingDto,
-                               @RequestHeader Map<String, String> headers) {
-        log.info("Begin of Booking creation: " + bookingDto.toString());
+    public BookingDtoOut saveBooking(@RequestBody BookingDto bookingDto,
+                                     @RequestHeader Map<String, String> headers) {
+        log.info("Begin of Booking creation: {}", bookingDto.toString());
         Long ownerId = getCurUserId(headers);
         return bookingService.saveBooking(bookingDto, ownerId);
     }
 
     @PatchMapping("/{id}")
-    public Booking approveBooking(@PathVariable Long id,
-                                  @RequestParam String approved,
-                                  @RequestHeader Map<String, String> headers) {
-        log.info("Begin of Booking approving, id=" + id);
+    public BookingDtoOut approveBooking(@PathVariable Long id,
+                                        @RequestParam String approved,
+                                        @RequestHeader Map<String, String> headers) {
+        log.info("Begin of Booking approving, id={}", id);
         Long ownerId = getCurUserId(headers);
         return bookingService.approveBooking(id, ownerId, approved);
     }
 
     @GetMapping("/{id}")
-    public Booking getBookingById(@PathVariable Long id,
-                                  @RequestHeader Map<String, String> headers) {
-        log.info("Begin of getting Booking by id, id=" + id);
+    public BookingDtoOut getBookingById(@PathVariable Long id,
+                                        @RequestHeader Map<String, String> headers) {
+        log.info("Begin of getting Booking by id, id={}", id);
         Long ownerId = getCurUserId(headers);
         return bookingService.getBookingById(id, ownerId);
     }
@@ -50,10 +50,10 @@ public class BookingController {
      * Бронирования должны возвращаться отсортированными по дате от более новых к более старым.
      */
     @GetMapping
-    public List<Booking> getAllBookingsForBooker(@RequestParam(defaultValue = "ALL") String state,
-                                                 @RequestHeader Map<String, String> headers,
-                                                 @RequestParam(required = false) Long from,
-                                                 @RequestParam(required = false) Long size) {
+    public List<BookingDtoOut> getAllBookingsForBooker(@RequestParam(defaultValue = "ALL") String state,
+                                                       @RequestHeader Map<String, String> headers,
+                                                       @RequestParam(required = false) Long from,
+                                                       @RequestParam(required = false) Long size) {
         log.info("Begin of getting all Bookings for user as Booker");
         Long bookerId = getCurUserId(headers);
         return bookingService.getAllBookings(bookerId, state, true, from, size);
@@ -65,10 +65,10 @@ public class BookingController {
      * Работа параметра state аналогична его работе в предыдущем сценарии.
      */
     @GetMapping("/owner")
-    public List<Booking> getAllBookingsForOwner(@RequestParam(defaultValue = "ALL") String state,
-                                                @RequestHeader Map<String, String> headers,
-                                                @RequestParam(required = false) Long from,
-                                                @RequestParam(required = false) Long size) {
+    public List<BookingDtoOut> getAllBookingsForOwner(@RequestParam(defaultValue = "ALL") String state,
+                                                      @RequestHeader Map<String, String> headers,
+                                                      @RequestParam(required = false) Long from,
+                                                      @RequestParam(required = false) Long size) {
         log.info("Begin of getting all Bookings for user as Owner");
         Long ownerId = getCurUserId(headers);
         return bookingService.getAllBookings(ownerId, state, false, from, size);

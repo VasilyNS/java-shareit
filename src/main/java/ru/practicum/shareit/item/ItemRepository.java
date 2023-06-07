@@ -16,6 +16,10 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByRequest(Request requestSearch);
 
     @Query("select i from Item i " +
+            "where i.request in ?1 ")
+    List<Item> findByRequestForArray(List<Request> requestsSearch);
+
+    @Query("select i from Item i " +
             "where ( upper(i.name) like upper(concat('%', ?1, '%')) " +
             "or upper(i.description) like upper(concat('%', ?1, '%')) ) " +
             "and i.available = true")

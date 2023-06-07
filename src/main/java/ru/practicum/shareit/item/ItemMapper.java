@@ -1,5 +1,8 @@
 package ru.practicum.shareit.item;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class ItemMapper {
 
     public static ItemDtoDate toItemDtoDate(Item item) {

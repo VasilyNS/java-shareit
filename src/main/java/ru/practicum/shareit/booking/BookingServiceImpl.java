@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.item.ItemDto;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.tools.Const;
 import ru.practicum.shareit.tools.Validator;
@@ -15,9 +16,11 @@ import ru.practicum.shareit.tools.exception.ItemValidateFailException;
 import ru.practicum.shareit.tools.exception.NotFoundException;
 import ru.practicum.shareit.tools.exception.ValidationException;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserDto;
 import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,7 +33,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
 
     @Transactional
-    public Booking saveBooking(BookingDto bookingDto, Long ownerId) {
+    public BookingDtoOut saveBooking(BookingDto bookingDto, Long ownerId) {
         // Если предмет недоступен, выдаем ошибку
         checkBookingItemExist(bookingDto);
 
@@ -43,11 +46,12 @@ public class BookingServiceImpl implements BookingService {
         // Заполнение booking из bookingDto
         Booking booking = fillBookingFormBookingDtoForSave(bookingDto, ownerId);
 
-        return bookingRepository.save(booking);
+        Booking bookingForReturn = bookingRepository.save(booking);
+        return bookingToBookingDtoOut(bookingForReturn);
     }
 
     @Transactional
-    public Booking approveBooking(Long id, Long ownerId, String approved) {
+    public BookingDtoOut approveBooking(Long id, Long ownerId, String approved) {
         Booking booking = checkBookingExist(id);
 
         // Проверка на повторное подтверждение бронирования
@@ -69,16 +73,17 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingValidateFailException("Value 'approved' must be only 'true' or 'false'");
         }
 
-        return bookingRepository.save(booking);
+        Booking bookingForReturn = bookingRepository.save(booking);
+        return bookingToBookingDtoOut(bookingForReturn);
     }
 
-    public Booking getBookingById(Long id, Long ownerId) {
+    public BookingDtoOut getBookingById(Long id, Long ownerId) {
         Booking booking = checkBookingExist(id);
 
         // Может быть выполнено либо автором бронирования, либо владельцем вещи
         if (booking.getItem().getOwner().getId().equals(ownerId) ||
                 booking.getBooker().getId().equals(ownerId)) {
-            return booking;
+            return bookingToBookingDtoOut(booking);
         } else {
             throw new NotFoundException("Getting Booking By id only for Booker or Owner");
         }
@@ -88,7 +93,7 @@ public class BookingServiceImpl implements BookingService {
      * booker = true -> ForBooker
      * booker = false -> ForOwner
      */
-    public List<Booking> getAllBookings(Long bookerId, String state, boolean booker, Long from, Long size) {
+    public List<BookingDtoOut> getAllBookings(Long bookerId, String state, boolean booker, Long from, Long size) {
         User user = userService.getUser(bookerId);
         Validator.pageableValidation(from, size);
         LocalDateTime now = LocalDateTime.now();
@@ -98,49 +103,63 @@ public class BookingServiceImpl implements BookingService {
         if (from == null || size == null) { // Если не задана пагинация, то выбираем все, но всё равно с ограничением!
             pageFrom = 0;
             pageSize = Const.MAX_PAGE_SIZE; // Ограничение выдачи больших списков для защиты от флуда
-        } else  {
+        } else {
             pageFrom = Math.toIntExact(from / size); // Конвертация начала страницы в номер элемента
             pageSize = Math.toIntExact(size);
         }
         Sort sort = Sort.by(Sort.Direction.ASC, "id");
         Pageable page = PageRequest.of(pageFrom, pageSize, sort);
 
+        List<Booking> lb;
+
         switch (state) {
             case "ALL": // Все
                 if (booker) {
-                    return bookingRepository.findBookingsForBookerStatusAll(user, page);
+                    lb = bookingRepository.findBookingsForBookerStatusAll(user, page);
+                    return bookingListToBookingDtoOut(lb);
                 } else {
-                    return bookingRepository.findBookingsForOwnerStatusAll(user, page);
+                    lb = bookingRepository.findBookingsForOwnerStatusAll(user, page);
+                    return bookingListToBookingDtoOut(lb);
                 }
             case "FUTURE": // Будущие
                 if (booker) {
-                    return bookingRepository.findBookingsForBookerStatusFuture(user, now);
+                    lb = bookingRepository.findBookingsForBookerStatusFuture(user, now);
+                    return bookingListToBookingDtoOut(lb);
                 } else {
-                    return bookingRepository.findBookingsForOwnerStatusFuture(user, now);
+                    lb = bookingRepository.findBookingsForOwnerStatusFuture(user, now);
+                    return bookingListToBookingDtoOut(lb);
                 }
             case "WAITING": // Ожидающие подтверждения
                 if (booker) {
-                    return bookingRepository.findBookingsForBookerStatusWaiting(user, now);
+                    lb = bookingRepository.findBookingsForBookerStatusWaiting(user, now);
+                    return bookingListToBookingDtoOut(lb);
                 } else {
-                    return bookingRepository.findBookingsForOwnerStatusWaiting(user, now);
+                    lb = bookingRepository.findBookingsForOwnerStatusWaiting(user, now);
+                    return bookingListToBookingDtoOut(lb);
                 }
             case "REJECTED": // Отклонённые
                 if (booker) {
-                    return bookingRepository.findBookingsForBookerStatusRejected(user, now);
+                    lb = bookingRepository.findBookingsForBookerStatusRejected(user, now);
+                    return bookingListToBookingDtoOut(lb);
                 } else {
-                    return bookingRepository.findBookingsForOwnerStatusRejected(user, now);
+                    lb = bookingRepository.findBookingsForOwnerStatusRejected(user, now);
+                    return bookingListToBookingDtoOut(lb);
                 }
             case "CURRENT": // Текущие
                 if (booker) {
-                    return bookingRepository.findBookingsForBookerStatusCurrent(user, now);
+                    lb = bookingRepository.findBookingsForBookerStatusCurrent(user, now);
+                    return bookingListToBookingDtoOut(lb);
                 } else {
-                    return bookingRepository.findBookingsForOwnerStatusCurrent(user, now);
+                    lb = bookingRepository.findBookingsForOwnerStatusCurrent(user, now);
+                    return bookingListToBookingDtoOut(lb);
                 }
             case "PAST": // Завершённые
                 if (booker) {
-                    return bookingRepository.findBookingsForBookerStatusPast(user, now);
+                    lb = bookingRepository.findBookingsForBookerStatusPast(user, now);
+                    return bookingListToBookingDtoOut(lb);
                 } else {
-                    return bookingRepository.findBookingsForOwnerStatusPast(user, now);
+                    lb = bookingRepository.findBookingsForOwnerStatusPast(user, now);
+                    return bookingListToBookingDtoOut(lb);
                 }
             default:
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
@@ -186,5 +205,34 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.WAITING);
         return booking;
     }
+
+    List<BookingDtoOut> bookingListToBookingDtoOut(List<Booking> lb) {
+        List<BookingDtoOut> listOut = new ArrayList<>();
+        for (Booking booking : lb) {
+            listOut.add(bookingToBookingDtoOut(booking));
+        }
+        return listOut;
+    }
+
+    BookingDtoOut bookingToBookingDtoOut(Booking booking) {
+        BookingDtoOut bookingDtoOut = new BookingDtoOut();
+
+        bookingDtoOut.setId(booking.getId());
+        bookingDtoOut.setStart(booking.getStart());
+        bookingDtoOut.setEnd(booking.getEnd());
+        bookingDtoOut.setStatus(booking.getStatus());
+
+        UserDto booker = new UserDto();
+        booker.setId(booking.getBooker().getId());
+        bookingDtoOut.setBooker(booker);
+
+        ItemDto itemDto = new ItemDto();
+        itemDto.setId(booking.getItem().getId());
+        itemDto.setName(booking.getItem().getName());
+        bookingDtoOut.setItem(itemDto);
+
+        return bookingDtoOut;
+    }
+
 
 }

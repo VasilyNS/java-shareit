@@ -9,11 +9,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingDto;
 import ru.practicum.shareit.booking.BookingService;
-import ru.practicum.shareit.request.Request;
-import ru.practicum.shareit.request.RequestDto;
-import ru.practicum.shareit.request.RequestMapper;
-import ru.practicum.shareit.request.RequestService;
+import ru.practicum.shareit.request.*;
 import ru.practicum.shareit.tools.exception.CommentValidateFailException;
+import ru.practicum.shareit.tools.exception.ItemValidateFailException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserDto;
 import ru.practicum.shareit.user.UserService;
@@ -45,6 +43,7 @@ class ItemServiceImplTest {
     private Item item1;
     private ItemDto itemDto1;
     private Request request1;
+    private RequestDtoIn requestDtoIn1;
     private RequestDto requestDto1;
     private Comment comment1;
     private CommentDto commentDto1;
@@ -63,6 +62,7 @@ class ItemServiceImplTest {
         user2 = userService.saveUser(userDto2);
         user3 = userService.saveUser(userDto3);
         request1 = new Request(0L, "Описание запроса", user1, LocalDateTime.now());
+        requestDtoIn1 = new RequestDtoIn("Описание запроса");
         requestDto1 = RequestMapper.toRequestDto(request1);
         item1 = new Item(0L, "Тестовый предмет 1", "Описание 1", true, user2, request1);
         itemDto1 = ItemMapper.toItemDto(item1);
@@ -75,16 +75,29 @@ class ItemServiceImplTest {
     @Test
     void saveItemTest() {
         addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
-        ItemDto itemDto2 = itemService.saveItem(itemDto1, 2L);
+        requestService.saveRequest(requestDtoIn1, 3L);
+        itemService.saveItem(itemDto1, 2L);
 
         assertEquals("Тестовый предмет 1", itemService.checkItemExist(1L).getName());
+
+        // Проверка валидации полей предмета
+        itemDto1.setName("");
+
+        final ItemValidateFailException e1 = assertThrows(ItemValidateFailException.class,
+                new Executable() {
+                    @Override
+                    public void execute() {
+                        itemService.saveItem(itemDto1, 2L);
+                    }
+                });
+
+        assertEquals("Field 'name' in Item must be not blank", e1.getMessage());
     }
 
     @Test
     void updateItem() {
         addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
+        requestService.saveRequest(requestDtoIn1, 3L);
         itemService.saveItem(itemDto1, 2L);
 
         assertEquals("Тестовый предмет 1", itemService.checkItemExist(1L).getName());
@@ -100,7 +113,7 @@ class ItemServiceImplTest {
     @Test
     void getItemDtoDateTest() {
         addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
+        requestService.saveRequest(requestDtoIn1, 3L);
         itemService.saveItem(itemDto1, 2L);
 
         assertEquals("Тестовый предмет 1", itemService.getItemDtoDate(1L, 2L).getName());
@@ -109,7 +122,7 @@ class ItemServiceImplTest {
     @Test
     void getAllItemByOwnerTest() {
         addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
+        requestService.saveRequest(requestDtoIn1, 3L);
         itemService.saveItem(itemDto1, 2L);
 
         List<ItemDtoDate> l = itemService.getAllItemByOwner(2L);
@@ -119,7 +132,7 @@ class ItemServiceImplTest {
     @Test
     void getItemsByTextTest() {
         addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
+        requestService.saveRequest(requestDtoIn1, 3L);
         itemService.saveItem(itemDto1, 2L);
 
         List<Item> l = itemService.getItemsByText("преДмет");
@@ -129,7 +142,7 @@ class ItemServiceImplTest {
     @Test
     void saveCommentTest() throws InterruptedException {
         addNewTestItems();
-        requestService.saveRequest(requestDto1, 3L);
+        requestService.saveRequest(requestDtoIn1, 3L);
         itemService.saveItem(itemDto1, 2L);
 
         final CommentValidateFailException e = assertThrows(CommentValidateFailException.class,

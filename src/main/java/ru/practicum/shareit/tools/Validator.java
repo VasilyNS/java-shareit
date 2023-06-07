@@ -5,7 +5,7 @@ import org.springframework.util.StringUtils;
 import ru.practicum.shareit.booking.BookingDto;
 import ru.practicum.shareit.item.Comment;
 import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.request.RequestDto;
+import ru.practicum.shareit.request.RequestDtoIn;
 import ru.practicum.shareit.tools.exception.*;
 import ru.practicum.shareit.user.User;
 
@@ -71,8 +71,8 @@ public class Validator {
         }
     }
 
-    public static void requestValidation(RequestDto requestDto) {
-        if (!StringUtils.hasText(requestDto.getDescription())) {
+    public static void requestValidation(RequestDtoIn requestDtoIn) {
+        if (!StringUtils.hasText(requestDtoIn.getDescription())) {
             throw new RequestValidateFailException("Request field 'description' must be not blank");
         }
 

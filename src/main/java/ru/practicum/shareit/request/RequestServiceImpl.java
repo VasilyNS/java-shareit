@@ -19,7 +19,9 @@ import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,12 +34,12 @@ public class RequestServiceImpl implements RequestService {
     private final ItemRepository itemRepository;
 
     @Transactional
-    public RequestDto saveRequest(RequestDto requestDto, Long userId) {
+    public RequestDto saveRequest(RequestDtoIn requestDtoIn, Long userId) {
         User user = userService.getUser(userId);
-        Validator.requestValidation(requestDto);
+        Validator.requestValidation(requestDtoIn);
         Request request = new Request();
 
-        request.setDescription(requestDto.getDescription());
+        request.setDescription(requestDtoIn.getDescription());
         request.setRequestor(user);
         request.setCreated(LocalDateTime.now());
 
@@ -53,15 +55,11 @@ public class RequestServiceImpl implements RequestService {
     public List<RequestDto> getRequestsOwn(Long userId) {
         User user = userService.checkUserExist(userId);
 
+        // Получение списка всех запросов, удовлетворяющих условиям
         List<Request> requests = requestRepository.findByOwn(user);
 
-        List<RequestDto> requestsDto = new ArrayList<>();
-        for (Request request : requests) {
-            RequestDto requestDto = RequestMapper.toRequestDto(request);
-            List<ItemDto> itemsDto = toListOfItemDto(itemRepository.findByRequest(request));
-            requestDto.setItems(itemsDto);
-            requestsDto.add(requestDto);
-        }
+        // Набивка массива List<Request> requests вещами
+        List<RequestDto> requestsDto = completeRequestsDtoArrayByItems(requests);
 
         return requestsDto;
     }
@@ -94,14 +92,8 @@ public class RequestServiceImpl implements RequestService {
         Page<Request> requestsPage = requestRepository.findAllByItemsOwner(userId, page);
         List<Request> requests = requestsPage.stream().collect(Collectors.toList());
 
-        // Конвертация в список RequestDto в соответствии с ТЗ в тестах по выдаче полей JSON
-        List<RequestDto> requestsDto = new ArrayList<>();
-        for (Request request : requests) {
-            RequestDto requestDto = RequestMapper.toRequestDto(request);
-            List<ItemDto> itemsDto = toListOfItemDto(itemRepository.findByRequest(request));
-            requestDto.setItems(itemsDto);
-            requestsDto.add(requestDto);
-        }
+        // Набивка массива List<Request> requests вещами
+        List<RequestDto> requestsDto = completeRequestsDtoArrayByItems(requests);
 
         return requestsDto;
     }
@@ -133,6 +125,38 @@ public class RequestServiceImpl implements RequestService {
             itemsDto.add(itemDto);
         }
         return itemsDto;
+    }
+
+    /**
+     * Набивка массива List<Request> requests вещами
+     */
+    List<RequestDto> completeRequestsDtoArrayByItems(List<Request> requests) {
+        // Получение всех вещей для этих запросов, чтобы был единый запрос к базе
+        List<ItemDto> allItemsDto = toListOfItemDto(itemRepository.findByRequestForArray(requests));
+
+        // Разбиваем все вещи на мапу: <id запроса + массив вещей для этого id>
+        Map<Long, List<ItemDto>> itemsMap = new HashMap<>();
+        for (ItemDto itemDto : allItemsDto) {
+            Long id = itemDto.getRequestId();
+            if (itemsMap.containsKey(id)) {
+                itemsMap.get(id).add(itemDto);
+            } else {
+                List<ItemDto> itemsListForMap = new ArrayList<>();
+                itemsListForMap.add(itemDto);
+                itemsMap.put(id, itemsListForMap);
+            }
+        }
+
+        // Подключаем каждый массив вещей из мапы для соответствующего запроса
+        List<RequestDto> requestsDto = new ArrayList<>();
+        for (Request request : requests) {
+            RequestDto requestDto = RequestMapper.toRequestDto(request);
+            Long id = requestDto.getId();
+            requestDto.setItems(itemsMap.getOrDefault(id, List.of()));
+            requestsDto.add(requestDto);
+        }
+
+        return requestsDto;
     }
 
 }

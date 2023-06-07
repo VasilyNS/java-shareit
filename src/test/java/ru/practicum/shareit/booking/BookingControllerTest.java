@@ -13,6 +13,7 @@ import org.springframework.web.context.WebApplicationContext;
 import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.tools.Const;
+import ru.practicum.shareit.tools.exception.BookingValidateFailException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserDto;
 import ru.practicum.shareit.user.UserService;
@@ -63,6 +64,11 @@ public class BookingControllerTest {
                     LocalDateTime.of(2020, 07, 07, 15, 37, 23),
                     LocalDateTime.of(2120, 07, 07, 15, 37, 23),
                     item1, user1, BookingStatus.WAITING);
+    private BookingDtoOut bookingDtoOut1 =
+            new BookingDtoOut(1L,
+                    LocalDateTime.of(2020, 07, 07, 15, 37, 23),
+                    LocalDateTime.of(2120, 07, 07, 15, 37, 23),
+                    itemDto1, BookingStatus.WAITING, userDto1);
 
 
     @BeforeEach
@@ -74,7 +80,7 @@ public class BookingControllerTest {
 
     @Test
     void saveBookingTest() throws Exception {
-        when(bookingService.saveBooking(any(), any())).thenReturn(booking1);
+        when(bookingService.saveBooking(any(), any())).thenReturn(bookingDtoOut1);
 
         mvc.perform(post("/bookings")
                         .content(mapper.writeValueAsString(booking1))
@@ -94,9 +100,28 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.status").value(booking1.getStatus().toString()));
     }
 
+    /**
+     * Проверка ошибок для контроллера
+     */
+    @Test
+    void saveBookingValidationTest() throws Exception {
+        when(bookingService.saveBooking(any(), any()))
+                .thenThrow(new BookingValidateFailException("Booking end before start"));
+
+        mvc.perform(post("/bookings")
+                        .content(mapper.writeValueAsString(booking1))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(Const.X_OWNER, "1"))
+                //.andDo(print()) // Дебаг запроса и ответа для отладки
+                .andExpect(status().isBadRequest());
+    }
+
+
     @Test
     void approveBookingTest() throws Exception {
-        when(bookingService.approveBooking(any(), any(), any())).thenReturn(booking1);
+        when(bookingService.approveBooking(any(), any(), any())).thenReturn(bookingDtoOut1);
 
         mvc.perform(patch("/bookings/1?approved=true")
                         .content(mapper.writeValueAsString(booking1))
@@ -118,7 +143,7 @@ public class BookingControllerTest {
 
     @Test
     void getBookingByIdTest() throws Exception {
-        when(bookingService.getBookingById(any(), any())).thenReturn(booking1);
+        when(bookingService.getBookingById(any(), any())).thenReturn(bookingDtoOut1);
 
         mvc.perform(get("/bookings/1")
                         .content(mapper.writeValueAsString(booking1))
@@ -141,7 +166,7 @@ public class BookingControllerTest {
     @Test
     void getAllBookingsForBookerTest() throws Exception {
         when(bookingService.getAllBookings(any(), any(), eq(true), any(), any()))
-                .thenReturn(List.of(booking1, booking1, booking1));
+                .thenReturn(List.of(bookingDtoOut1, bookingDtoOut1, bookingDtoOut1));
 
         mvc.perform(get("/bookings?state=FUTURE")
                         //.content(mapper.writeValueAsString(booking1))
@@ -159,7 +184,7 @@ public class BookingControllerTest {
     @Test
     void getAllBookingsForOwnerTest() throws Exception {
         when(bookingService.getAllBookings(any(), any(), eq(false), any(), any()))
-                .thenReturn(List.of(booking1, booking1, booking1));
+                .thenReturn(List.of(bookingDtoOut1, bookingDtoOut1, bookingDtoOut1));
 
         mvc.perform(get("/bookings/owner?state=FUTURE")
                         //.content(mapper.writeValueAsString(booking1))

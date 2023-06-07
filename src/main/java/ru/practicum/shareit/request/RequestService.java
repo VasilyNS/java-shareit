@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface RequestService {
 
-    RequestDto saveRequest(RequestDto requestDto, Long userId);
+    RequestDto saveRequest(RequestDtoIn requestDtoIn, Long userId);
 
     List<RequestDto> getRequestsOwn(Long userId);
 

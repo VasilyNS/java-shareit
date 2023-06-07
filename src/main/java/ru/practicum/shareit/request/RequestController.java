@@ -17,10 +17,10 @@ public class RequestController {
     private final RequestService requestService;
 
     @PostMapping
-    public RequestDto saveRequest(@RequestBody RequestDto requestDto, @RequestHeader Map<String, String> headers) {
-        log.info("Begin of Request creation: " + requestDto.toString());
+    public RequestDto saveRequest(@RequestBody RequestDtoIn requestDtoIn, @RequestHeader Map<String, String> headers) {
+        log.info("Begin of Request creation: {}", requestDtoIn.toString());
         Long userId = getCurUserId(headers);
-        return requestService.saveRequest(requestDto, userId);
+        return requestService.saveRequest(requestDtoIn, userId);
     }
 
     /**
@@ -52,7 +52,7 @@ public class RequestController {
      */
     @GetMapping("/{id}")
     public RequestDto getRequestById(@PathVariable Long id, @RequestHeader Map<String, String> headers) {
-        log.info("Begin of Request getting by id, id=" + id);
+        log.info("Begin of Request getting by id, id={}", id);
         Long userId = getCurUserId(headers);
         return requestService.getRequestById(id, userId);
     }

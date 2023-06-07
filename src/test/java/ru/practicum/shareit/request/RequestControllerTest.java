@@ -54,7 +54,7 @@ public class RequestControllerTest {
     private ItemDto itemDto1 = new ItemDto(1L, "Тестовый предмет 1", "Описание 1", true, 1L);
     private Request request1 = new Request(1L, "Описание запроса", user1,
             LocalDateTime.of(2020, 07, 07, 15, 37, 23));
-    private RequestDto requestDto1 = new RequestDto(1L, "Описание запроса", user1,
+    private RequestDto requestDto1 = new RequestDto(1L, "Описание запроса", userDto1,
             LocalDateTime.of(2020, 07, 07, 15, 37, 23),
             List.of(itemDto1));
     private Item item1 = new Item(1L, "Тестовый предмет 1", "Описание 1", true, user1, request1);
