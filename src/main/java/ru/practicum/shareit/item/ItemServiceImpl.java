@@ -7,6 +7,7 @@ import org.springframework.util.StringUtils;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingDtoForBookerId;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.request.RequestService;
 import ru.practicum.shareit.tools.Validator;
 import ru.practicum.shareit.tools.exception.CommentValidateFailException;
 import ru.practicum.shareit.tools.exception.ItemNotFoundException;
@@ -16,6 +17,7 @@ import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -24,17 +26,26 @@ import java.util.List;
 public class ItemServiceImpl implements ItemService {
 
     private final UserService userService;
+    private final RequestService requestService;
+
     private final ItemRepository itemRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
 
     @Transactional
-    public Item saveItem(ItemDto itemDto, Long ownerId) {
+    public ItemDto saveItem(ItemDto itemDto, Long ownerId) {
         Item item = ItemMapper.toItem(itemDto);
         Validator.allItemValidation(item);
         userService.checkUserExist(ownerId);
         item.setOwner(userService.getUser(ownerId));
-        return itemRepository.save(item);
+        if (itemDto.getRequestId() != null) {
+            item.setRequest(requestService.checkRequestExist(itemDto.getRequestId()));
+        }
+        ItemDto outItemDto = ItemMapper.toItemDto(itemRepository.save(item));
+        if (itemDto.getRequestId() != null) {
+            outItemDto.setRequestId(itemDto.getRequestId());
+        }
+        return outItemDto;
     }
 
     @Transactional
@@ -85,8 +96,7 @@ public class ItemServiceImpl implements ItemService {
 
     public List<Item> getItemsByText(String text) {
         if (!StringUtils.hasText(text)) {
-            List<Item> itemList = new ArrayList<>();
-            return itemList;
+            return Collections.emptyList();
         }
         return itemRepository.getItemsByText(text);
     }

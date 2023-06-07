@@ -23,5 +23,6 @@ public class ItemDtoDate {
     private List<CommentDto> comments = new ArrayList<>();
     private BookingDtoForBookerId lastBooking;
     private BookingDtoForBookerId nextBooking;
+    private Long requestId;
 
 }

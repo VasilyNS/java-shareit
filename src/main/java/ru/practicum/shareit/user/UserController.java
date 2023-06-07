@@ -16,19 +16,19 @@ public class UserController {
 
     @PostMapping
     public User saveUser(@RequestBody UserDto userDto) {
-        log.info("Begin of User creation: " + userDto.toString());
+        log.info("Begin of User creation: {}", userDto.toString());
         return userService.saveUser(userDto);
     }
 
     @PatchMapping("/{id}")
     public User updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
-        log.info("Begin of User updating, id=" + id + ", " + userDto.toString());
+        log.info("Begin of User updating, id={}, {}", id, userDto.toString());
         return userService.updateUser(id, userDto);
     }
 
     @GetMapping("/{id}")
     public User getUser(@PathVariable Long id) {
-        log.info("Begin of User getting, id=" + id);
+        log.info("Begin of User getting, id={}", id);
         return userService.getUser(id);
     }
 
@@ -40,7 +40,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public void del(@PathVariable Long id) {
-        log.info("Begin of User deleting, id=" + id);
+        log.info("Begin of User deleting, id={}", id);
         userService.deleteUser(id);
     }
 

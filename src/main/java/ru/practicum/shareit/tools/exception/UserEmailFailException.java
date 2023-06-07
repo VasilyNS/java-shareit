@@ -7,4 +7,3 @@ public class UserEmailFailException extends RuntimeException {
     }
 
 }
-

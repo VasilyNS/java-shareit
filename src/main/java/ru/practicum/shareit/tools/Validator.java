@@ -1,18 +1,20 @@
 package ru.practicum.shareit.tools;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import ru.practicum.shareit.booking.BookingDto;
 import ru.practicum.shareit.item.Comment;
 import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.request.RequestDtoIn;
 import ru.practicum.shareit.tools.exception.*;
 import ru.practicum.shareit.user.User;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
+/**
+ * Валидация статическими методами
+ */
 @Slf4j
-@RequiredArgsConstructor
 public class Validator {
 
     public static void userEmailValidation(User user) {
@@ -64,10 +66,32 @@ public class Validator {
     }
 
     public static void commentValidation(Comment comment) {
-
         if (!StringUtils.hasText(comment.getText())) {
             throw new CommentValidateFailException("Comment field 'text' must be not blank");
         }
+    }
+
+    public static void requestValidation(RequestDtoIn requestDtoIn) {
+        if (!StringUtils.hasText(requestDtoIn.getDescription())) {
+            throw new RequestValidateFailException("Request field 'description' must be not blank");
+        }
+
+    }
+
+    public static void pageableValidation(Long from, Long size) {
+        if (from != null && size != null) {
+            if (from < 0) {
+                throw new ValidationException("Pageable validation fail, 'from' must be above 0");
+            }
+            if (size < 1) {
+                throw new ValidationException("Pageable validation fail, 'size' must be above 1");
+            }
+            if (size > Const.MAX_PAGE_SIZE) {
+                throw new ValidationException("Pageable validation fail, 'size' too big, max size = "
+                        + Const.MAX_PAGE_SIZE);
+            }
+        }
+
     }
 
 }
