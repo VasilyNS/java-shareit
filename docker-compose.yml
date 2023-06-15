@@ -1,0 +1,56 @@
+version: '3.8'
+services:
+  shareIt-gateway:
+    build: gateway
+    image: gateway_img
+    container_name: shareit-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - shareIt-server
+    environment:
+      - SHAREIT_SERVER_URL=http://shareIt-server:9090
+      # Закомментить таймзону перед отправкой на гитхаб
+#      - TZ=Asia/Krasnoyarsk
+
+  shareIt-server:
+    build: server
+    image: server_img
+    container_name: shareit-server
+    ports:
+      - "9090:9090"
+    depends_on:
+      postgresql:
+          condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/shareit
+      #- SPRING_DATASOURCE_URL=jdbc:h2:mem:shareit
+      # Закомментить таймзону перед отправкой на гитхаб
+#      - TZ=Asia/Krasnoyarsk
+#    restart: on-failure:3
+#    restart-delay: 10s
+
+  postgresql:
+    image: postgres:13.7-alpine
+    container_name: postgres_container
+    ports:
+      - "6541:5432"
+    volumes:
+      - /var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=shareit
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      # Закомментить таймзону перед отправкой на гитхаб
+#      - TZ=Asia/Krasnoyarsk
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U root -d shareit'"]
+      # Остальные варианты не работают! Или ошибка в лог, или не поднимается контейнер!
+      #test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
+      #test: [ "CMD-SHELL", "pg_isready -d shareit" ]
+      #test: [ "CMD", "pg_isready -h postgresql -p 5432 -U root -d shareit" ]
+      #test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      #test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 7s
+      timeout: 7s
+      retries: 7
