@@ -83,7 +83,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDtoDate> getAllItemByOwner(Long ownerId) {
         List<Item> items;
         List<ItemDtoDate> itemsDtoDates = new ArrayList<>();
-        items = itemRepository.findByOwner(userService.getUser(ownerId));
+        items = itemRepository.findByOwnerOrderById(userService.getUser(ownerId));
 
         for (Item item : items) {
             ItemDtoDate itemDtoDates = ItemMapper.toItemDtoDate(item);
@@ -101,6 +101,7 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.getItemsByText(text);
     }
 
+    @Transactional
     public CommentDto saveComment(Comment comment, Long itemId, Long userId) {
         Validator.commentValidation(comment);
 
